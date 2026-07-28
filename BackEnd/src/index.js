@@ -32,7 +32,28 @@ app.get('/', (req, res) => {
   res.send('API do Dispenser de Remédios Rodando! 💊');
 });
 
-// 2. ROTA: BUSCAR AGENDA DO DISPOSITIVO (GET)
+// 2. ROTA: BUSCAR DADOS DO DISPOSITIVO (GET)
+// Sem suporte a múltiplos pacientes por enquanto (1 usuário = 1 dispositivo,
+// cadastrado direto no banco) — por isso não existe rota de listagem, só de
+// detalhe de um id específico.
+app.get('/api/dispositivo/:id', async (req, res) => {
+  const idDispositivo = req.params.id;
+  try {
+    const querySQL = 'SELECT id_dispositivo, nome_paciente, nome_cuidador, telefone FROM dispositivos WHERE id_dispositivo = $1';
+    const resultado = await db.query(querySQL, [idDispositivo]);
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ erro: 'Dispositivo não encontrado.' });
+    }
+
+    return res.status(200).json(resultado.rows[0]);
+  } catch (error) {
+    console.error('Erro ao buscar dispositivo:', error);
+    return res.status(500).json({ erro: 'Erro interno ao buscar dispositivo no banco.' });
+  }
+});
+
+// 3. ROTA: BUSCAR AGENDA DO DISPOSITIVO (GET)
 app.get('/api/dispositivo/:id/agenda', async (req, res) => {
   const idDispositivo = req.params.id; 
   try {
@@ -45,7 +66,7 @@ app.get('/api/dispositivo/:id/agenda', async (req, res) => {
   }
 });
 
-// 3. ROTA: CADASTRAR UM NOVO HORÁRIO DE MEDICAMENTO (POST)
+// 4. ROTA: CADASTRAR UM NOVO HORÁRIO DE MEDICAMENTO (POST)
 app.post('/api/medicamentos/agendar', async (req, res) => {
   const {
     id_dispositivo, nome_remedio, dosagem, horario,
@@ -80,7 +101,50 @@ app.post('/api/medicamentos/agendar', async (req, res) => {
   }
 });
 
-// 4. ROTA: CONFIRMAÇÃO DO ESP32 (REMEDIO TOMADO - POST)
+// 5. ROTA: ATUALIZAR UM HORÁRIO DE MEDICAMENTO (PATCH)
+app.patch('/api/medicamentos/:id', async (req, res) => {
+  const idMedicamento = req.params.id;
+  const {
+    nome_remedio, dosagem, horario, estoque,
+    segunda, terca, quarta, quinta, sexta, sabado, domingo
+  } = req.body;
+
+  if (!nome_remedio || !horario) {
+    return res.status(400).json({ erro: 'nome_remedio e horario são obrigatórios!' });
+  }
+
+  try {
+    const querySQL = `
+      UPDATE horarios_medicamentos
+      SET nome_remedio = $1, dosagem = $2, horario = $3, estoque = $4,
+          segunda = $5, terca = $6, quarta = $7, quinta = $8, sexta = $9, sabado = $10, domingo = $11
+      WHERE id = $12
+      RETURNING *;
+    `;
+
+    const valores = [
+      nome_remedio, dosagem, horario, estoque ?? 0,
+      segunda ?? true, terca ?? true, quarta ?? true, quinta ?? true, sexta ?? true, sabado ?? true, domingo ?? true,
+      idMedicamento
+    ];
+
+    const resultado = await db.query(querySQL, valores);
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ erro: 'Medicamento não encontrado no banco.' });
+    }
+
+    return res.status(200).json({
+      mensagem: 'Medicamento atualizado com sucesso! ✏️',
+      dados: resultado.rows[0]
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar medicamento:', error);
+    return res.status(500).json({ erro: 'Erro interno ao atualizar no banco de dados.' });
+  }
+});
+
+// 6. ROTA: CONFIRMAÇÃO DO ESP32 (REMEDIO TOMADO - POST)
 app.post('/api/dispositivo/confirmacao', async (req, res) => {
   const { id_dispositivo, nome_remedio, horario_programado } = req.body;
 
@@ -127,7 +191,7 @@ app.post('/api/dispositivo/confirmacao', async (req, res) => {
   }
 });
 
-// 5. ROTA: BUSCAR HISTÓRICO DE DOSES PARA OS GRÁFICOS 
+// 7. ROTA: BUSCAR HISTÓRICO DE DOSES PARA OS GRÁFICOS
 app.get('/api/dispositivo/:id/historico', async (req, res) => {
   const idDispositivo = req.params.id;
   try {
@@ -145,7 +209,7 @@ app.get('/api/dispositivo/:id/historico', async (req, res) => {
   }
 });
 
-// 6. ROTA: DELETAR UM MEDICAMENTO DA AGENDA 
+// 8. ROTA: DELETAR UM MEDICAMENTO DA AGENDA
 app.delete('/api/medicamentos/:id', async (req, res) => {
   const idMedicamento = req.params.id;
 

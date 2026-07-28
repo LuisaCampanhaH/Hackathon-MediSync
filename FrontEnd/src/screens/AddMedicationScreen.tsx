@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Platform, Pressable, TextInput } from 'react-native';
+import { Alert, Animated, Platform, Pressable, TextInput } from 'react-native';
 import { ScrollView, YStack, XStack, Text } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 import { useAppTheme } from '../theme/ThemeContext';
 import { radii, shadow, space } from '../theme/tokens';
-import { addMedication, getMedication, getPatient, updateMedication } from '../data/mockData';
+import { getMedication, usePatientData } from '../data/store';
 import type { Navigate, ScreenName } from '../../App';
 
 const FREQUENCIES = ['1x ao dia', '2x ao dia', '3x ao dia', 'A cada 8h', 'Outro'];
@@ -24,15 +24,13 @@ function inputStyle(colors: ReturnType<typeof useAppTheme>['colors']) {
 
 export default function AddMedicationScreen({
   navigate,
-  patientId,
   medicationId,
 }: {
   navigate: Navigate;
-  patientId: string;
   medicationId?: string;
 }) {
   const { colors, isDark } = useAppTheme();
-  const patient = getPatient(patientId);
+  const { patient, addMedication, updateMedication } = usePatientData();
   const existing = medicationId ? getMedication(patient, medicationId) : undefined;
   const backTarget: ScreenName = medicationId ? 'manage' : 'dashboard';
 
@@ -44,10 +42,11 @@ export default function AddMedicationScreen({
   const [stock, setStock] = useState(existing?.stock ?? 30);
   const [draftTime, setDraftTime] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
   const toastAnim = useRef(new Animated.Value(0)).current;
 
-  const canSave = name.trim().length > 0;
+  const canSave = name.trim().length > 0 && !saving;
 
   function confirmTime(date: Date) {
     const time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
@@ -72,20 +71,27 @@ export default function AddMedicationScreen({
     setTimes((prev) => prev.filter((t) => t !== time));
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!canSave) return;
+    setSaving(true);
     const input = {
       name: name.trim(),
       dosage: dosage.trim(),
       stock,
       times: times.length ? times : ['08:00'],
     };
-    if (medicationId) {
-      updateMedication(patientId, medicationId, input);
-    } else {
-      addMedication(patientId, input);
+    try {
+      if (medicationId) {
+        await updateMedication(medicationId, input);
+      } else {
+        await addMedication(input);
+      }
+      setToastVisible(true);
+    } catch (e) {
+      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível salvar o medicamento.');
+    } finally {
+      setSaving(false);
     }
-    setToastVisible(true);
   }
 
   useEffect(() => {
@@ -381,7 +387,7 @@ export default function AddMedicationScreen({
                 {...shadow.hero}
               >
                 <Text color={colors.onPrimary} fontSize={17} fontWeight="700">
-                  {medicationId ? 'Salvar Alterações' : 'Salvar Configuração'}
+                  {saving ? 'Salvando...' : medicationId ? 'Salvar Alterações' : 'Salvar Configuração'}
                 </Text>
               </YStack>
             </Pressable>

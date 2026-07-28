@@ -1,21 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable } from 'react-native';
 import { ScrollView, YStack, XStack, Text } from 'tamagui';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 
 import { useAppTheme } from '../theme/ThemeContext';
 import { radii, shadow, space } from '../theme/tokens';
-import { patients, getPatient, getMedication, type DoseLogEntry } from '../data/mockData';
+import { getMedication, usePatientData, type DoseLogEntry } from '../data/store';
 import type { Navigate } from '../../App';
-
-function nextOccurrence(scheduledTime: string) {
-  const [h, m] = scheduledTime.split(':').map(Number);
-  const target = new Date();
-  target.setHours(h, m, 0, 0);
-  if (target.getTime() < Date.now()) target.setDate(target.getDate() + 1);
-  return target;
-}
 
 function minutesLate(scheduledTime: string) {
   const [h, m] = scheduledTime.split(':').map(Number);
@@ -24,75 +16,40 @@ function minutesLate(scheduledTime: string) {
   return Math.max(1, Math.round((Date.now() - scheduled.getTime()) / 60000));
 }
 
-function FadeScaleIn({ children }: { children: React.ReactNode }) {
-  const anim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    Animated.timing(anim, { toValue: 1, duration: 180, useNativeDriver: true }).start();
-  }, [anim]);
-  return (
-    <Animated.View
-      style={{
-        opacity: anim,
-        transform: [{ scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1] }) }],
-      }}
-    >
-      {children}
-    </Animated.View>
-  );
+// null quando é hoje (não precisa rótulo extra), "Amanhã" ou "Seg 28/07" caso contrário
+function dayLabelFor(scheduledAt: string) {
+  const target = new Date(scheduledAt);
+  target.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((target.getTime() - today.getTime()) / 86400000);
+  if (diffDays === 0) return null;
+  if (diffDays === 1) return 'Amanhã';
+  const date = new Date(scheduledAt);
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  return `${DAY_LABELS[date.getDay()]} ${dd}/${mm}`;
 }
 
-function PulseDot({ color }: { color: string }) {
-  const anim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.timing(anim, { toValue: 1, duration: 2000, useNativeDriver: true })
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [anim]);
-  return (
-    <YStack width={10} height={10} alignItems="center" justifyContent="center">
-      <Animated.View
-        style={{
-          position: 'absolute',
-          width: 10,
-          height: 10,
-          borderRadius: 5,
-          backgroundColor: color,
-          opacity: anim.interpolate({ inputRange: [0, 0.7, 1], outputRange: [0.45, 0.12, 0] }),
-          transform: [{ scale: anim.interpolate({ inputRange: [0, 1], outputRange: [1, 2.6] }) }],
-        }}
-      />
-      <YStack width={10} height={10} borderRadius={5} backgroundColor={color} />
-    </YStack>
-  );
-}
+const DAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
-export default function DashboardScreen({
-  navigate,
-  patientId,
-  setActivePatientId,
-}: {
-  navigate: Navigate;
-  patientId: string;
-  setActivePatientId: (id: string) => void;
-}) {
+export default function DashboardScreen({ navigate }: { navigate: Navigate }) {
   const { colors, isDark, toggleTheme } = useAppTheme();
-  const [switcherOpen, setSwitcherOpen] = useState(false);
-  const patient = getPatient(patientId);
+  const { patient } = usePatientData();
 
   const pendingDoses = patient.doseLog
     .filter((d) => d.status === 'pending')
-    .sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime));
+    .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
   const nextDose = pendingDoses[0];
   const nextMed = nextDose ? getMedication(patient, nextDose.medicationId) : undefined;
+  const nextDoseDayLabel = nextDose ? dayLabelFor(nextDose.scheduledAt) : null;
 
   const [remaining, setRemaining] = useState(() =>
-    nextDose ? nextOccurrence(nextDose.scheduledTime).getTime() - Date.now() : 0
+    nextDose ? new Date(nextDose.scheduledAt).getTime() - Date.now() : 0
   );
   useEffect(() => {
     if (!nextDose) return;
-    const target = nextOccurrence(nextDose.scheduledTime).getTime();
+    const target = new Date(nextDose.scheduledAt).getTime();
     const id = setInterval(() => setRemaining(target - Date.now()), 1000);
     return () => clearInterval(id);
     // re-run only when the next dose actually changes, not on every object identity change
@@ -171,23 +128,11 @@ export default function DashboardScreen({
       >
         <XStack
           paddingHorizontal={space.lg}
-          paddingBottom={space.md}
+          paddingBottom={space.section}
           alignItems="center"
           justifyContent="space-between"
         >
-          <Pressable
-            onPress={() => setSwitcherOpen((v) => !v)}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-              backgroundColor: colors.surfaceAlt,
-              borderRadius: radii.pill,
-              paddingVertical: 6,
-              paddingRight: 14,
-              paddingLeft: 6,
-            }}
-          >
+          <XStack alignItems="center" gap={10}>
             <YStack
               width={40}
               height={40}
@@ -200,16 +145,10 @@ export default function DashboardScreen({
                 {patient.initials}
               </Text>
             </YStack>
-            <YStack>
-              <Text fontSize={16} fontWeight="700" color={colors.textPrimary}>
-                {patient.name}
-              </Text>
-              <Text fontSize={11.5} color={colors.textSecondary}>
-                Trocar paciente
-              </Text>
-            </YStack>
-            <Feather name="chevron-down" size={14} color={colors.textSecondary} />
-          </Pressable>
+            <Text fontSize={16} fontWeight="700" color={colors.textPrimary}>
+              {patient.name}
+            </Text>
+          </XStack>
 
           <Pressable
             onPress={toggleTheme}
@@ -226,34 +165,7 @@ export default function DashboardScreen({
           </Pressable>
         </XStack>
 
-        <XStack
-          marginHorizontal={space.lg}
-          marginBottom={space.section}
-          paddingVertical={space.sm}
-          paddingHorizontal={space.md}
-          borderRadius={radii.sm}
-          alignItems="center"
-          gap={space.sm}
-          backgroundColor={patient.device.online ? colors.successTint : colors.warnTint}
-        >
-          {patient.device.online ? (
-            <PulseDot color={colors.success} />
-          ) : (
-            <YStack width={10} height={10} borderRadius={5} backgroundColor={colors.warn} />
-          )}
-          <Text
-            fontSize={14.5}
-            fontWeight="700"
-            color={patient.device.online ? colors.successText : colors.warnText}
-          >
-            {patient.device.online ? 'Dispositivo Online' : 'Dispositivo Offline'}
-          </Text>
-          <Text fontSize={12.5} color={colors.textMuted}>
-            · {patient.device.syncLabel}
-          </Text>
-        </XStack>
-
-        {patient.device.online && nextMed && nextDose ? (
+        {nextMed && nextDose ? (
           <LinearGradient
             colors={[colors.primary, colors.primaryDark]}
             start={{ x: 0, y: 0 }}
@@ -280,7 +192,7 @@ export default function DashboardScreen({
               {nextMed.name} · {nextMed.dosage}
             </Text>
             <Text fontSize={14.5} color={colors.onPrimary} opacity={0.85} marginTop={4}>
-              às {nextDose.scheduledTime}
+              {nextDoseDayLabel ? `${nextDoseDayLabel} às ${nextDose.scheduledTime}` : `às ${nextDose.scheduledTime}`}
             </Text>
             <XStack alignItems="flex-end" gap={space.sm} marginTop={space.md}>
               <Text
@@ -311,13 +223,13 @@ export default function DashboardScreen({
             backgroundColor={colors.surfaceAlt}
           >
             <XStack alignItems="center" gap={space.sm}>
-              <Feather name="alert-triangle" size={22} color={colors.textSecondary} />
+              <Feather name="check-circle" size={22} color={colors.textSecondary} />
               <Text fontSize={17} fontWeight="700" color={colors.textPrimary}>
-                Agenda indisponível
+                Nenhuma dose pendente hoje
               </Text>
             </XStack>
             <Text fontSize={13.5} color={colors.textSecondary} marginTop={space.xs}>
-              Dispositivo offline — não é possível calcular a próxima dose.
+              Todas as doses de hoje já foram tomadas ou não há medicamentos cadastrados.
             </Text>
           </YStack>
         )}
@@ -338,7 +250,7 @@ export default function DashboardScreen({
               color={colors.textMuted}
               textTransform="uppercase"
             >
-              Histórico de hoje
+              Próximas doses
             </Text>
             <Pressable
               onPress={() => navigate('manage')}
@@ -351,9 +263,15 @@ export default function DashboardScreen({
             </Pressable>
           </XStack>
           <YStack gap={2}>
+            {patient.doseLog.length === 0 && (
+              <Text fontSize={13.5} color={colors.textSecondary} textAlign="center" paddingVertical={12}>
+                Nenhum medicamento cadastrado ainda.
+              </Text>
+            )}
             {patient.doseLog.map((dose) => {
               const med = getMedication(patient, dose.medicationId);
               const isNext = nextDose?.id === dose.id;
+              const dayLabel = dayLabelFor(dose.scheduledAt);
               return (
                 <XStack key={dose.id} gap={space.md} paddingVertical={space.sm}>
                   {iconFor(dose, isNext)}
@@ -368,6 +286,19 @@ export default function DashboardScreen({
                         >
                           {dose.scheduledTime}
                         </Text>
+                        {dayLabel && (
+                          <Text
+                            fontSize={11}
+                            fontWeight="700"
+                            color={colors.textMuted}
+                            backgroundColor={colors.surfaceAlt}
+                            paddingHorizontal={6}
+                            paddingVertical={2}
+                            borderRadius={6}
+                          >
+                            {dayLabel}
+                          </Text>
+                        )}
                         <Text fontSize={16.5} fontWeight="700" color={colors.textPrimary}>
                           {med?.name} · {med?.dosage}
                         </Text>
@@ -395,63 +326,6 @@ export default function DashboardScreen({
           </YStack>
         </YStack>
       </ScrollView>
-
-      {switcherOpen && (
-        <YStack position="absolute" top={112} left={space.lg} right={space.lg}>
-          <FadeScaleIn>
-            <YStack
-              backgroundColor={colors.surface}
-              borderWidth={1}
-              borderColor={colors.border}
-              borderRadius={radii.lg}
-              overflow="hidden"
-              {...shadow.dropdown}
-            >
-              {patients
-                .filter((p) => p.id !== patientId)
-                .map((p) => (
-                  <Pressable
-                    key={p.id}
-                    onPress={() => {
-                      setActivePatientId(p.id);
-                      setSwitcherOpen(false);
-                    }}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: 14,
-                      borderBottomWidth: 1,
-                      borderBottomColor: colors.border,
-                    }}
-                  >
-                    <YStack
-                      width={36}
-                      height={36}
-                      borderRadius={18}
-                      backgroundColor={colors.primaryTint}
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Text color={colors.primary} fontWeight="700" fontSize={13.5}>
-                        {p.initials}
-                      </Text>
-                    </YStack>
-                    <Text flex={1} fontSize={15.5} fontWeight="700" color={colors.textPrimary}>
-                      {p.name}
-                    </Text>
-                    <YStack
-                      width={9}
-                      height={9}
-                      borderRadius={4.5}
-                      backgroundColor={p.device.online ? colors.success : colors.warn}
-                    />
-                  </Pressable>
-                ))}
-            </YStack>
-          </FadeScaleIn>
-        </YStack>
-      )}
     </YStack>
   );
 }

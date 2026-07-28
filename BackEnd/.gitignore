@@ -1,2 +1,14 @@
+# dependencies
 node_modules/
+
+# env
 .env
+.env.local
+
+# logs
+npm-debug.log*
+logs/
+*.log
+
+# OS
+.DS_Store

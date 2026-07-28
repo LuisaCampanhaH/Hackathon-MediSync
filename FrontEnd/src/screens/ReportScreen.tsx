@@ -4,7 +4,7 @@ import { Feather } from '@expo/vector-icons';
 
 import { useAppTheme } from '../theme/ThemeContext';
 import { radii, shadow, space } from '../theme/tokens';
-import { weeklyAdherence, adherenceStats, streakDays, getPatient } from '../data/mockData';
+import { usePatientData } from '../data/store';
 import type { Navigate } from '../../App';
 
 const DONUT_R = 70;
@@ -13,12 +13,14 @@ const DONUT_SIZE = (DONUT_R + DONUT_STROKE) * 2;
 const CIRCUMFERENCE = 2 * Math.PI * DONUT_R;
 const BAR_MAX_HEIGHT = 64;
 
-export default function ReportScreen({ patientId }: { navigate: Navigate; patientId: string }) {
+export default function ReportScreen(_props: { navigate: Navigate }) {
   const { colors } = useAppTheme();
-  const patient = getPatient(patientId);
-  const pct = Math.round((adherenceStats.onTime / adherenceStats.scheduled) * 100);
+  const { patient, weeklyAdherence, adherenceStats, streakDays } = usePatientData();
+  const pct = adherenceStats.scheduled
+    ? Math.round((adherenceStats.onTime / adherenceStats.scheduled) * 100)
+    : 0;
   const dashLength = (pct / 100) * CIRCUMFERENCE;
-  const maxTotal = Math.max(...weeklyAdherence.map((d) => d.taken + d.missed));
+  const maxTotal = Math.max(1, ...weeklyAdherence.map((d) => d.taken + d.missed));
 
   const cardStyle = {
     marginHorizontal: space.lg,

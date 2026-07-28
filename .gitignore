@@ -1,0 +1,6 @@
+# Guards against `npm install` being run accidentally from the repo root
+# instead of inside FrontEnd/ or BackEnd/ (each has its own .gitignore too).
+node_modules/
+.env
+.env.local
+.DS_Store
