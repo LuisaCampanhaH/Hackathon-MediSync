@@ -41,6 +41,7 @@ export interface DoseNotificationIds {
 }
 
 export async function scheduleDoseNotifications(
+  patientName: string,
   medName: string,
   medDosage: string,
   scheduledTime: string
@@ -50,7 +51,7 @@ export async function scheduleDoseNotifications(
 
   const notifyId = await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Hora do medicamento',
+      title: `Hora do medicamento — ${patientName}`,
       body: `${medName} · ${medDosage} — ${scheduledTime}`,
       sound: 'default',
     },
@@ -59,7 +60,7 @@ export async function scheduleDoseNotifications(
 
   const lateNotifyId = await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Medicamento atrasado',
+      title: `Medicamento atrasado — ${patientName}`,
       body: `${medName} ainda não foi tomado — já se passaram ${LATE_REMINDER_MINUTES} minutos.`,
       sound: 'default',
     },

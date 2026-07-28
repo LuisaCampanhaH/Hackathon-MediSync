@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { TamaguiProvider, YStack, XStack, Text } from 'tamagui';
-import { Pressable } from 'react-native';
+import { ActivityIndicator, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import tamaguiConfig from './tamagui.config';
 import { ThemeProvider, useAppTheme } from './src/theme/ThemeContext';
 import { space } from './src/theme/tokens';
-import { patients, scheduleSeedNotifications } from './src/data/mockData';
+import { PatientDataProvider, usePatientData } from './src/data/store';
 import { setupNotifications } from './src/notifications';
 import ScreenTransition from './src/components/ScreenTransition';
 import DashboardScreen from './src/screens/DashboardScreen';
@@ -21,8 +21,8 @@ export type Navigate = (screen: ScreenName, doseId?: string, medicationId?: stri
 
 function AppShell() {
   const { colors, isDark } = useAppTheme();
+  const { loading, error, refresh } = usePatientData();
   const [screen, setScreen] = useState<ScreenName>('dashboard');
-  const [activePatientId, setActivePatientId] = useState(patients[0].id);
   const [alertDoseId, setAlertDoseId] = useState<string | undefined>();
   const [editMedicationId, setEditMedicationId] = useState<string | undefined>();
 
@@ -33,39 +33,79 @@ function AppShell() {
   };
 
   useEffect(() => {
-    setupNotifications().then((granted) => {
-      if (granted) scheduleSeedNotifications();
-    });
+    setupNotifications();
   }, []);
 
-  const screenProps = { navigate, patientId: activePatientId, setActivePatientId };
+  if (loading) {
+    return (
+      <YStack flex={1} backgroundColor={colors.bg} alignItems="center" justifyContent="center" gap={space.md}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text fontSize={14.5} color={colors.textSecondary}>
+          Carregando dados do servidor...
+        </Text>
+      </YStack>
+    );
+  }
+
+  if (error) {
+    return (
+      <YStack
+        flex={1}
+        backgroundColor={colors.bg}
+        alignItems="center"
+        justifyContent="center"
+        gap={space.md}
+        paddingHorizontal={space.lg}
+      >
+        <Feather name="wifi-off" size={32} color={colors.textSecondary} />
+        <Text fontSize={16} fontWeight="700" color={colors.textPrimary} textAlign="center">
+          Não foi possível falar com o servidor
+        </Text>
+        <Text fontSize={13.5} color={colors.textSecondary} textAlign="center">
+          {error}
+        </Text>
+        <Pressable onPress={() => refresh()}>
+          <YStack
+            backgroundColor={colors.primary}
+            borderRadius={12}
+            paddingHorizontal={20}
+            paddingVertical={12}
+          >
+            <Text color={colors.onPrimary} fontWeight="700">
+              Tentar novamente
+            </Text>
+          </YStack>
+        </Pressable>
+      </YStack>
+    );
+  }
 
   return (
     <YStack flex={1} backgroundColor={colors.bg}>
       <YStack flex={1}>
         {screen === 'dashboard' && (
           <ScreenTransition key="dashboard">
-            <DashboardScreen {...screenProps} />
+            <DashboardScreen navigate={navigate} />
           </ScreenTransition>
         )}
         {screen === 'add' && (
           <ScreenTransition key={`add-${editMedicationId ?? 'new'}`}>
-            <AddMedicationScreen {...screenProps} medicationId={editMedicationId} />
+            <AddMedicationScreen navigate={navigate} medicationId={editMedicationId} />
           </ScreenTransition>
         )}
         {screen === 'manage' && (
           <ScreenTransition key="manage">
-            <ManageMedicationsScreen {...screenProps} />
+            <ManageMedicationsScreen navigate={navigate} />
           </ScreenTransition>
         )}
         {screen === 'alert' && (
           <ScreenTransition key="alert">
-            <AlertScreen navigate={navigate} patientId={activePatientId} doseId={alertDoseId} />
+            <AlertScreen navigate={navigate} doseId={alertDoseId} />
           </ScreenTransition>
         )}
         {screen === 'report' && (
           <ScreenTransition key="report">
-            <ReportScreen navigate={navigate} patientId={activePatientId} />
+            <ReportScreen navigate={navigate} />
           </ScreenTransition>
         )}
       </YStack>
@@ -166,7 +206,9 @@ export default function App() {
   return (
     <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
       <ThemeProvider>
-        <AppShell />
+        <PatientDataProvider>
+          <AppShell />
+        </PatientDataProvider>
       </ThemeProvider>
     </TamaguiProvider>
   );

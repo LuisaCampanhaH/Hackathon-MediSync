@@ -1,10 +1,11 @@
-import { Linking, Pressable } from 'react-native';
+import { useState } from 'react';
+import { Alert, Linking, Pressable } from 'react-native';
 import { YStack, XStack, Text } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
 
 import { useAppTheme } from '../theme/ThemeContext';
 import { radii, space } from '../theme/tokens';
-import { getPatient, getMedication, markDoseTaken } from '../data/mockData';
+import { getMedication, usePatientData } from '../data/store';
 import type { Navigate } from '../../App';
 
 function minutesLate(scheduledTime: string) {
@@ -14,25 +15,29 @@ function minutesLate(scheduledTime: string) {
   return Math.max(1, Math.round((Date.now() - scheduled.getTime()) / 60000));
 }
 
-export default function AlertScreen({
-  navigate,
-  patientId,
-  doseId,
-}: {
-  navigate: Navigate;
-  patientId: string;
-  doseId?: string;
-}) {
+export default function AlertScreen({ navigate, doseId }: { navigate: Navigate; doseId?: string }) {
   const { colors } = useAppTheme();
-  const patient = getPatient(patientId);
+  const { patient, markDoseTaken } = usePatientData();
+  const [confirming, setConfirming] = useState(false);
   const dose = doseId
     ? patient.doseLog.find((d) => d.id === doseId)
     : patient.doseLog.find((d) => d.status === 'late');
   const med = dose ? getMedication(patient, dose.medicationId) : undefined;
 
-  function handleManualConfirm() {
-    if (dose) markDoseTaken(patientId, dose.id);
-    navigate('dashboard');
+  async function handleManualConfirm() {
+    if (!dose) {
+      navigate('dashboard');
+      return;
+    }
+    setConfirming(true);
+    try {
+      await markDoseTaken(dose.id);
+      navigate('dashboard');
+    } catch (e) {
+      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível confirmar a dose.');
+    } finally {
+      setConfirming(false);
+    }
   }
 
   return (
@@ -109,31 +114,33 @@ export default function AlertScreen({
       </YStack>
 
       <YStack gap={space.md} alignItems="center">
-        <Pressable
-          onPress={() => Linking.openURL('tel:+5511999998888')}
-          style={{ width: '100%', maxWidth: 320 }}
-        >
-          <XStack
-            alignItems="center"
-            justifyContent="center"
-            gap={space.sm}
-            minHeight={60}
-            borderRadius={18}
-            backgroundColor={colors.alertPrimaryBg}
-            shadowColor="#000"
-            shadowOffset={{ width: 0, height: 8 }}
-            shadowOpacity={0.2}
-            shadowRadius={18}
-            elevation={6}
+        {patient.phone && (
+          <Pressable
+            onPress={() => Linking.openURL(`tel:${patient.phone}`)}
+            style={{ width: '100%', maxWidth: 320 }}
           >
-            <Feather name="phone-call" size={20} color={colors.onWarn} />
-            <Text color={colors.onWarn} fontSize={17.5} fontWeight="700">
-              Ligar para o Paciente
-            </Text>
-          </XStack>
-        </Pressable>
+            <XStack
+              alignItems="center"
+              justifyContent="center"
+              gap={space.sm}
+              minHeight={60}
+              borderRadius={18}
+              backgroundColor={colors.alertPrimaryBg}
+              shadowColor="#000"
+              shadowOffset={{ width: 0, height: 8 }}
+              shadowOpacity={0.2}
+              shadowRadius={18}
+              elevation={6}
+            >
+              <Feather name="phone-call" size={20} color={colors.onWarn} />
+              <Text color={colors.onWarn} fontSize={17.5} fontWeight="700">
+                Ligar para o Paciente
+              </Text>
+            </XStack>
+          </Pressable>
+        )}
 
-        <Pressable onPress={handleManualConfirm} style={{ width: '100%', maxWidth: 320 }}>
+        <Pressable onPress={handleManualConfirm} disabled={confirming} style={{ width: '100%', maxWidth: 320 }}>
           <XStack
             alignItems="center"
             justifyContent="center"
@@ -142,10 +149,11 @@ export default function AlertScreen({
             borderRadius={18}
             borderWidth={2}
             borderColor={colors.alertSecondaryBorder}
+            opacity={confirming ? 0.6 : 1}
           >
             <Feather name="check" size={18} color={colors.alertSecondaryFg} />
             <Text color={colors.alertSecondaryFg} fontSize={16} fontWeight="700">
-              Marcar como tomado manualmente
+              {confirming ? 'Confirmando...' : 'Marcar como tomado atrasado'}
             </Text>
           </XStack>
         </Pressable>

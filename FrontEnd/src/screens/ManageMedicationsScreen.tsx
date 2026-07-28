@@ -5,19 +5,13 @@ import { Feather } from '@expo/vector-icons';
 
 import { useAppTheme } from '../theme/ThemeContext';
 import { radii, shadow, space } from '../theme/tokens';
-import { deleteMedication, getPatient, type Medication } from '../data/mockData';
+import { usePatientData, type Medication } from '../data/store';
 import type { Navigate } from '../../App';
 
-export default function ManageMedicationsScreen({
-  navigate,
-  patientId,
-}: {
-  navigate: Navigate;
-  patientId: string;
-}) {
+export default function ManageMedicationsScreen({ navigate }: { navigate: Navigate }) {
   const { colors } = useAppTheme();
-  const patient = getPatient(patientId);
-  const [, forceUpdate] = useState(0);
+  const { patient, deleteMedication } = usePatientData();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function handleDelete(med: Medication) {
     Alert.alert('Excluir medicamento', `Remover ${med.name} da lista de medicamentos?`, [
@@ -25,9 +19,15 @@ export default function ManageMedicationsScreen({
       {
         text: 'Excluir',
         style: 'destructive',
-        onPress: () => {
-          deleteMedication(patientId, med.id);
-          forceUpdate((v) => v + 1);
+        onPress: async () => {
+          setDeletingId(med.id);
+          try {
+            await deleteMedication(med.id);
+          } catch (e) {
+            Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível excluir.');
+          } finally {
+            setDeletingId(null);
+          }
         },
       },
     ]);
@@ -80,6 +80,7 @@ export default function ManageMedicationsScreen({
               borderColor={colors.border}
               borderRadius={radii.lg}
               padding={space.cardPadSm}
+              opacity={deletingId === med.id ? 0.5 : 1}
               {...shadow.card}
             >
               <XStack alignItems="flex-start" justifyContent="space-between">
@@ -97,6 +98,7 @@ export default function ManageMedicationsScreen({
                 <XStack gap={space.sm}>
                   <Pressable
                     onPress={() => navigate('add', undefined, med.id)}
+                    disabled={deletingId === med.id}
                     style={{
                       width: 40,
                       height: 40,
@@ -110,6 +112,7 @@ export default function ManageMedicationsScreen({
                   </Pressable>
                   <Pressable
                     onPress={() => handleDelete(med)}
+                    disabled={deletingId === med.id}
                     style={{
                       width: 40,
                       height: 40,
