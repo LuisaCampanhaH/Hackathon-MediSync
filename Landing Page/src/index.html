@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSync</title>
+    <meta property="og:title" content="MediSync">
+    <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="root">
+        <div class="min-h-screen">
+            <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100">
+                <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+                    <a href="#"><img src="img/logo.png" alt="MediSync" class="logo"></a>
+                    <div class="hidden md:flex items-center gap-8">
+                        <a href="#problema"
+                            class="text-sm font-medium text-slate-600 hover:text-emerald-600 transition-colors">Problema</a>
+                        <a href="#solução"
+                            class="text-sm font-medium text-slate-600 hover:text-emerald-600 transition-colors">Solução</a>
+                        <a href="#features"
+                            class="text-sm font-medium text-slate-600 hover:text-emerald-600 transition-colors">Features</a>
+                        <a href="#como-funciona"
+                            class="text-sm font-medium text-slate-600 hover:text-emerald-600 transition-colors">Como
+                            Funciona</a>
+                        <a href="#faq"
+                            class="text-sm font-medium text-slate-600 hover:text-emerald-600 transition-colors">FAQ</a>
+                    </div>
+                    <a href="#waitlist"
+                        class="hidden md:inline-flex items-center px-5 py-2.5 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 transition-all shadow-sm shadow-emerald-200">Entre
+                        na Lista de Espera</a>
+                    <button class="md:hidden p-2 text-slate-600" aria-label="Toggle menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 ">
+                            <path d="M3 12h18M3 6h18M3 18h18">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </nav>
+            <section class="relative pt-28 pb-20 md:pt-36 md:pb-32 overflow-hidden bg-white">
+                <div class="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-15 pointer-events-none"
+                    style="background: radial-gradient(circle, rgb(209, 250, 229) 0%, rgb(16, 185, 129) 50%, transparent 70%); transform: translate(-30%, 30%);">
+                </div>
+                <div class="relative max-w-6xl mx-auto px-6">
+                    <div class="grid md:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <div
+                                class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-teal-50 to-emerald-50 text-teal-700 border border-teal-200 mb-8">
+                                <span class="relative flex h-2 w-2">
+                                    <span
+                                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75">
+                                    </span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500">
+                                    </span>
+                                </span>Administração Inteligente de Medicamentos
+                            </div>
+                            <h1 class="text-5xl md:text-6xl font-bold text-slate-900 leading-[1.1] tracking-tight mb-6">
+                                Ajudando toda <span class="bg-clip-text text-transparent"
+                                    style="background-image: linear-gradient(135deg, rgb(20, 184, 166), rgb(16, 185, 129));">Medicação</span>
+                                Achar o Momento Certo</h1>
+                            <p class="text-lg text-slate-500 leading-relaxed mb-10 max-w-lg">Uma
+                                caixa de medicamentos inteligente conectada a um app interativo,
+                                ajudando pessoas de idade avançada a seguir seus tratamentos de forma segura enquanto
+                                oferece aos seus cuidadores maior tranquilidade no seu acompanhamento.</p>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <a href="#waitlist"
+                                    class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold text-white shadow-lg shadow-emerald-200 hover:shadow-emerald-300 transition-all hover:-translate-y-0.5"
+                                    style="background: linear-gradient(135deg, rgb(20, 184, 166), rgb(16, 185, 129));">Entrar
+                                    na Lista de Espera<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                                        class="w-6 h-6 w-4 h-4">
+                                        <path d="M5 12h14M12 5l7 7-7 7">
+                                        </path>
+                                    </svg>
+                                </a>
+                                <a href="#solução"
+                                    class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all">Ver
+                                    mais<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 w-4 h-4">
+                                        <path d="M19 9l-7 7-7-7">
+                                        </path>
+                                    </svg>
+                                </a>
+                            </div>
+                            <div class="mt-12 flex items-center gap-6">
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-emerald-600">98%</div>
+                                    <div class="text-xs text-slate-400 font-medium">Taxa de adesão</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-emerald-600">24/7</div>
+                                    <div class="text-xs text-slate-400 font-medium">Monitoramento</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-emerald-600">0</div>
+                                    <div class="text-xs text-slate-400 font-medium">Erros de medicação</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative flex items-center justify-center">
+                            <div class="relative flex items-center justify-center">
+
+                                <div class="phone-container w-56 md:w-72">
+                                    <img src="img/celular1.png" alt="Aplicativo MediSync"
+                                        class="w-full h-auto object-contain">
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+            </section>
+            <section id="problema" class="py-24 bg-slate-50">
+                <div class="max-w-6xl mx-auto px-6">
+                    <div class="text-center mb-16">
+                        <span
+                            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block">
+                            </span>O Problema</span>
+                        <h2 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight tracking-tight mt-4">Por
+                            que a administração de remédios
+                        </h2>
+                        <h2 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight tracking-tight mt-4">é um
+                            <span class="text-slate-400">Problema?</span>
+                        </h2>
+                        <p class="mt-4 text-lg text-slate-500 max-w-2xl mx-auto">Milhões de idosos e suas famílias
+                            enfrentam esses desafios todos os dias. O MediSync foi criado para resolvê-los.</p>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="rounded-2xl p-8 border hover:shadow-lg transition-shadow"
+                            style="background: rgb(255, 251, 235); border-color: rgb(253, 230, 138);">
+                            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
+                                style="background: rgba(245, 158, 11, 0.125); color: rgb(245, 158, 11);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 w-7 h-7">
+                                    <circle cx="12" cy="12" r="10">
+                                    </circle>
+                                    <path d="M12 8v4M12 16h.01">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-3">O esquecimento</h3>
+                            <p class="text-slate-600 leading-relaxed">Quase 50% dos pacientes idosos esquecem
+                                de tomar seus medicamentos conforme prescrito, levando a sérias complicações
+                                de saúde e readmissões hospitalares.</p>
+                        </div>
+                        <div class="rounded-2xl p-8 border hover:shadow-lg transition-shadow"
+                            style="background: rgb(255, 241, 242); border-color: rgb(254, 202, 202);">
+                            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
+                                style="background: rgba(239, 68, 68, 0.125); color: rgb(239, 68, 68);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 w-7 h-7">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z">
+                                    </path>
+                                    <path d="M9 12l2 2 4-4">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-3">Troca de Medicamentos</h3>
+                            <p class="text-slate-600 leading-relaxed">Tomar pílulas erradas, doses erradas ou em
+                                momentos errados
+                                é uma das principais causas de danos evitáveis em idosos, muitas vezes devido a regimes
+                                complexos de várias drogas.</p>
+                        </div>
+                        <div class="rounded-2xl p-8 border hover:shadow-lg transition-shadow"
+                            style="background: rgb(238, 242, 255); border-color: rgb(199, 210, 254);">
+                            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
+                                style="background: rgba(99, 102, 241, 0.125); color: rgb(99, 102, 241);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 w-7 h-7">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2">
+                                    </path>
+                                    <circle cx="9" cy="7" r="4">
+                                    </circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-3">Lacunas de Monitoramento Remoto</h3>
+                            <p class="text-slate-600 leading-relaxed">Cuidadores e familiares nem sempre podem
+                                estar presentes para confirmar que os medicamentos são tomados.
+                                A distância cria ansiedade e incerteza sobre a saúde dos entes queridos.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="solução" class="py-24 bg-white overflow-hidden">
+                <div class="max-w-6xl mx-auto px-6">
+                    <div class="text-center mb-16">
+                        <span
+                            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block">
+                            </span>Nossa Solução</span>
+                        <h2 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight tracking-tight mt-4">
+                            <span class="bg-clip-text text-transparent"
+                                style="background-image: linear-gradient(135deg, rgb(20, 184, 166), rgb(16, 185, 129));">O
+                                Ecossistema</span> do MediSync
+                        </h2>
+                        <p class="mt-4 text-lg text-slate-500 max-w-2xl mx-auto">Um sistema perfeitamente conectado que
+                            faz a ponte entre cuidadores e pacientes, onde quer que estejam.</p>
+                    </div>
+                    <div class="relative mb-20">
+
+                        <div class="relative flex flex-col md:flex-row justify-between gap-8 items-start">
+                            <div class="hidden md:block absolute z-0" style="
+                                top: 46px;
+                                left: 12%;
+                                width: 76%;
+                                height: 3px;
+                                background: linear-gradient(to right,#14b8a6,#10b981);
+                                opacity: .20;
+                                border-radius: 999px;">
+                            </div>
+
+                            <!-- Card 1 -->
+                            <div class="flex flex-col items-center flex-1">
+                                <div class="relative z-10 w-20 h-20 md:w-24 md:h-24 rounded-3xl flex items-center justify-center text-4xl shadow-lg flex-shrink-0"
+                                    style="background: linear-gradient(135deg, rgba(20,184,166,.125), rgba(20,184,166,.063)); border:2px solid rgba(20,184,166,.19);">
+                                    📱
+                                </div>
+
+                                <div class="text-center mt-4 min-h-[130px]">
+                                    <div class="font-bold text-slate-900 text-base">App Cuidador</div>
+                                    <div class="text-sm text-slate-500 mt-1 max-w-[130px]">
+                                        Programas de horários de medicação remotamente a partir de qualquer dispositivo
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 2 -->
+                            <div class="flex flex-col items-center flex-1">
+                                <div class="relative z-10 w-20 h-20 md:w-24 md:h-24 rounded-3xl flex items-center justify-center text-4xl shadow-lg flex-shrink-0"
+                                    style="background: linear-gradient(135deg, rgba(16,185,129,.125), rgba(16,185,129,.063)); border:2px solid rgba(16,185,129,.19);">
+                                    📶
+                                </div>
+
+                                <div class="text-center mt-4 min-h-[130px]">
+                                    <div class="font-bold text-slate-900 text-base">Sincronização</div>
+                                    <div class="text-sm text-slate-500 mt-1 max-w-[140px]">
+                                        Sincronização em tempo real
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 3 -->
+                            <div class="flex flex-col items-center flex-1">
+                                <div class="relative z-10 w-20 h-20 md:w-24 md:h-24 rounded-3xl flex items-center justify-center text-4xl shadow-lg flex-shrink-0"
+                                    style="background: linear-gradient(135deg, rgba(5,150,105,.125), rgba(5,150,105,.063)); border:2px solid rgba(5,150,105,.19);">
+                                    💊
+                                </div>
+
+                                <div class="text-center mt-4 min-h-[130px]">
+                                    <div class="font-bold text-slate-900 text-base">Caixa Inteligente</div>
+                                    <div class="text-sm text-slate-500 mt-1 max-w-[140px]">
+                                        Armazena, organiza e libera a medicação certa a tempo
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 4 -->
+                            <div class="flex flex-col items-center flex-1">
+                                <div class="relative z-10 w-20 h-20 md:w-24 md:h-24 rounded-3xl flex items-center justify-center text-4xl shadow-lg flex-shrink-0"
+                                    style="background: linear-gradient(135deg, rgba(4,120,87,.125), rgba(4,120,87,.063)); border:2px solid rgba(4,120,87,.19);">
+                                    👴
+                                </div>
+
+                                <div class="text-center mt-4 min-h-[130px]">
+                                    <div class="font-bold text-slate-900 text-base">Paciente</div>
+                                    <div class="text-sm text-slate-500 mt-1 max-w-[140px]">
+                                        Recebe alerta e remove remédio de forma simples
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <div
+                            class="group p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-emerald-100 hover:shadow-md transition-all">
+                            <div
+                                class="w-11 h-11 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br from-teal-500 to-emerald-500 text-white group-hover:scale-110 transition-transform">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                                    <path
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-slate-900 mb-1.5">Cronograma Remoto</h3>
+                            <p class="text-sm text-slate-500 leading-relaxed">Cronograma de medicação completa feita
+                                pelo cuidador de qualquer lugar usando o aplicativo MediSync.</p>
+                        </div>
+                        <div
+                            class="group p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-emerald-100 hover:shadow-md transition-all">
+                            <div
+                                class="w-11 h-11 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br from-teal-500 to-emerald-500 text-white group-hover:scale-110 transition-transform">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                                    <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z">
+                                    </path>
+                                    <polyline points="13 2 13 9 20 9">
+                                    </polyline>
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-slate-900 mb-1.5">Liberação Automática</h3>
+                            <p class="text-sm text-slate-500 leading-relaxed">A caixa desbloqueia apenas o compartimento
+                                correto no horário exato agendado. Zero confusão.</p>
+                        </div>
+                        <div
+                            class="group p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-emerald-100 hover:shadow-md transition-all">
+                            <div
+                                class="w-11 h-11 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br from-teal-500 to-emerald-500 text-white group-hover:scale-110 transition-transform">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                                    <path d="M18 8h1a4 4 0 010 8h-1">
+                                    </path>
+                                    <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z">
+                                    </path>
+                                    <line x1="6" y1="1" x2="6" y2="4">
+                                    </line>
+                                    <line x1="10" y1="1" x2="10" y2="4">
+                                    </line>
+                                    <line x1="14" y1="1" x2="14" y2="4">
+                                    </line>
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-slate-900 mb-1.5">Sinal de Alerta</h3>
+                            <p class="text-sm text-slate-500 leading-relaxed">Som de alerta é emitido para lembrar o
+                                paciente quando é hora de tomar medicação.</p>
+                        </div>
+                        <div
+                            class="group p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-emerald-100 hover:shadow-md transition-all">
+                            <div
+                                class="w-11 h-11 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br from-teal-500 to-emerald-500 text-white group-hover:scale-110 transition-transform">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                                    <rect x="2" y="3" width="20" height="14" rx="2">
+                                    </rect>
+                                    <path d="M8 21h8M12 17v4">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-slate-900 mb-1.5">Sensor de Peso</h3>
+                            <p class="text-sm text-slate-500 leading-relaxed">Os sensores de precisão detectam se o
+                                remédio foi retirado ou não.</p>
+                        </div>
+                        <div
+                            class="group p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-emerald-100 hover:shadow-md transition-all">
+                            <div
+                                class="w-11 h-11 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br from-teal-500 to-emerald-500 text-white group-hover:scale-110 transition-transform">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.82a19.79 19.79 0 01-3.07-8.67A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.91a16 16 0 006.18 6.18l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-slate-900 mb-1.5">Notificações em Tempo Real</h3>
+                            <p class="text-sm text-slate-500 leading-relaxed">Os cuidadores sabem instantaneamente
+                                quando a medicação é tomada ou são alertados se for perdida.</p>
+                        </div>
+                        <div
+                            class="group p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-emerald-100 hover:shadow-md transition-all">
+                            <div
+                                class="w-11 h-11 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br from-teal-500 to-emerald-500 text-white group-hover:scale-110 transition-transform">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2">
+                                    </path>
+                                    <circle cx="9" cy="7" r="4">
+                                    </circle>
+                                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-slate-900 mb-1.5">Dashboard para o Cuidador</h3>
+                            <p class="text-sm text-slate-500 leading-relaxed">Histórico completo de medicamentos e
+                                tendências de adesão em um só lugar.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="features" class="py-24"
+                style="background: linear-gradient(rgb(240, 253, 250) 0%, rgb(236, 253, 245) 100%);">
+                <div class="max-w-6xl mx-auto px-6">
+                    <div class="text-center mb-16">
+                        <span
+                            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block">
+                            </span>Features</span>
+                        <h2 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight tracking-tight mt-4">Tudo
+                            O Que Você Precisa <span class="text-emerald-600">Em Um Só Lugar</span>
+                        </h2>
+                        <p class="mt-4 text-lg text-slate-500 max-w-2xl mx-auto">O MediSync carrega tecnologia poderosa
+                            em um sistema tão simples que qualquer pessoa pode usá-lo – nenhum conhecimento técnico
+                            necessário.</p>
+                    </div>
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div
+                            class="group bg-white rounded-2xl p-8 border border-emerald-100 hover:shadow-xl hover:shadow-emerald-100 hover:-translate-y-1 transition-all cursor-default">
+                            <div class="text-4xl mb-5">🗓️</div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-2">Cronograma Inteligente</h3>
+                            <p class="text-slate-500 text-sm leading-relaxed">Defina horários complexos de vários
+                                remédios com doses, horários e dias personalizados, tudo a partir de uma interface de
+                                calendário simples.</p>
+                        </div>
+                        <div
+                            class="group bg-white rounded-2xl p-8 border border-emerald-100 hover:shadow-xl hover:shadow-emerald-100 hover:-translate-y-1 transition-all cursor-default">
+                            <div class="text-4xl mb-5">🔓</div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-2">Liberação de Medicamento Automática</h3>
+                            <p class="text-slate-500 text-sm leading-relaxed">O compartimento correto abre
+                                automaticamente no horário programado. Nenhuma intervenção manual necessária.</p>
+                        </div>
+                        <div
+                            class="group bg-white rounded-2xl p-8 border border-emerald-100 hover:shadow-xl hover:shadow-emerald-100 hover:-translate-y-1 transition-all cursor-default">
+                            <div class="text-4xl mb-5">⚖️</div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-2">Detecção de Sensor de Peso</h3>
+                            <p class="text-slate-500 text-sm leading-relaxed">O sensor confirma se a medicação foi
+                                removida fisicamente da caixa.</p>
+                        </div>
+                        <div
+                            class="group bg-white rounded-2xl p-8 border border-emerald-100 hover:shadow-xl hover:shadow-emerald-100 hover:-translate-y-1 transition-all cursor-default">
+                            <div class="text-4xl mb-5">📱</div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-2">Android &amp; iOS App</h3>
+                            <p class="text-slate-500 text-sm leading-relaxed">Aplicativos móveis nativos para ambas as
+                                plataformas, com design intuitivo otimizado para os usuários.</p>
+                        </div>
+                        <div
+                            class="group bg-white rounded-2xl p-8 border border-emerald-100 hover:shadow-xl hover:shadow-emerald-100 hover:-translate-y-1 transition-all cursor-default">
+                            <div class="text-4xl mb-5">📋</div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-2">Histórico de Medicação</h3>
+                            <p class="text-slate-500 text-sm leading-relaxed">Trilha de auditoria completa de cada dose
+                                tomada, perdida ou tardia, com timestamps e tendências.</p>
+                        </div>
+                        <div
+                            class="group bg-white rounded-2xl p-8 border border-emerald-100 hover:shadow-xl hover:shadow-emerald-100 hover:-translate-y-1 transition-all cursor-default">
+                            <div class="text-4xl mb-5">👥</div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-2">Dashboard para Cuidador</h3>
+                            <p class="text-slate-500 text-sm leading-relaxed">Monitore seu paciente/familiar, acompanhe
+                                se a adesão ao tratamento está sendo feito corretamente.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="como-funciona" class="py-24 bg-white">
+                <div class="max-w-6xl mx-auto px-6">
+                    <div class="text-center mb-16">
+                        <span
+                            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block">
+                            </span>Como Funciona</span>
+                        <h2 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight tracking-tight mt-4">
+                            Simples para Todos, <span class="text-teal-600">Design Inteligente</span>
+                        </h2>
+                    </div>
+                    <div class="relative">
+                        <div class="hidden lg:block absolute top-14 h-0.5"
+                            style="left: 105px; width: 81%; background: linear-gradient(to right,#14b8a6,#10b981);">
+                        </div>
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                            <div class="relative flex flex-col items-center text-center">
+                                <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg text-white relative z-10"
+                                    style="background: linear-gradient(135deg, rgb(20, 184, 166), rgb(16, 185, 129));">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                                        <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-slate-900 mb-2">Programa para Cuidadores</h3>
+                                <p class="text-sm text-slate-500 leading-relaxed">Usando o aplicativo MediSync, um
+                                    cuidador ou
+                                    familiar programa o cronograma completo de medicação do paciente: doses, horários e
+                                    frequências.</p>
+                            </div>
+                            <div class="relative flex flex-col items-center text-center">
+                                <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg text-white relative z-10"
+                                    style="background: linear-gradient(135deg, rgb(20, 184, 166), rgb(16, 185, 129));">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                                        <rect x="2" y="7" width="20" height="14" rx="2">
+                                        </rect>
+                                        <path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z">
+                                        </path>
+                                        <path d="M12 12v5M9.5 14.5h5">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-slate-900 mb-2">MediSync Armazena &amp; Organiza</h3>
+                                <p class="text-sm text-slate-500 leading-relaxed">A caixa inteligente recebe a
+                                    programação via Wi-Fi e prepara cada compartimento. Os medicamentos são armazenados
+                                    com segurança.</p>
+                            </div>
+                            <div class="relative flex flex-col items-center text-center">
+                                <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg text-white relative z-10"
+                                    style="background: linear-gradient(135deg, rgb(20, 184, 166), rgb(16, 185, 129));">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                                        <circle cx="12" cy="12" r="10">
+                                        </circle>
+                                        <path d="M12 8v4l3 3">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-slate-900 mb-2">Medicação é Liberada</h3>
+                                <p class="text-sm text-slate-500 leading-relaxed">No horário agendado, o compartimento
+                                    correto se abre automaticamente. Soms de áudio alertam o paciente.</p>
+                            </div>
+                            <div class="relative flex flex-col items-center text-center">
+                                <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg text-white relative z-10"
+                                    style="background: linear-gradient(135deg, rgb(20, 184, 166), rgb(16, 185, 129));">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                                        <path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-slate-900 mb-2">Confirmação</h3>
+                                <p class="text-sm text-slate-500 leading-relaxed">Sensores de peso detectam remoção. O
+                                    cuidador recebe confirmação instantânea em seu telefone ou um alerta de dose
+                                    perdida, se necessário.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="py-24 bg-slate-900 overflow-hidden relative">
+                <div class="absolute inset-0 pointer-events-none opacity-30"
+                    style="background: radial-gradient(at right top, rgb(20, 184, 166), transparent 60%), radial-gradient(at left bottom, rgb(16, 185, 129), transparent 60%);">
+                </div>
+                <div class="relative max-w-6xl mx-auto px-6">
+                    <div class="text-center mb-16">
+                        <span
+                            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block">
+                            </span>Benefícios</span>
+                        <h2 class="mt-4 text-4xl md:text-5xl font-bold text-white leading-tight">Resultados Reais para
+                            Pessoas Reais</h2>
+                        <p class="mt-4 text-lg text-slate-400 max-w-xl mx-auto">O MediSync não apenas organiza
+                            medicamentos, ele transforma como as famílias experimentam cuidar.</p>
+                    </div>
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div
+                            class="rounded-2xl p-8 text-center border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors">
+                            <div class="text-5xl font-black mb-3" style="color: rgb(16, 185, 129);">94%</div>
+                            <div class="text-white font-semibold mb-1">Adesão da Medicação</div>
+                            <div class="text-slate-400 text-sm">vs. 50% média nacional</div>
+                        </div>
+                        <div
+                            class="rounded-2xl p-8 text-center border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors">
+                            <div class="text-5xl font-black mb-3" style="color: rgb(20, 184, 166);">3×</div>
+                            <div class="text-white font-semibold mb-1">Mais Independência</div>
+                            <div class="text-slate-400 text-sm">Pacientes se sentem mais autosuficientes</div>
+                        </div>
+                        <div
+                            class="rounded-2xl p-8 text-center border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors">
+                            <div class="text-5xl font-black mb-3" style="color: rgb(5, 150, 105);">0</div>
+                            <div class="text-white font-semibold mb-1">Erros de Medicação</div>
+                            <div class="text-slate-400 text-sm">Em usuários do MediSync</div>
+                        </div>
+                        <div
+                            class="rounded-2xl p-8 text-center border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors">
+                            <div class="text-5xl font-black mb-3" style="color: rgb(13, 148, 136);">100%</div>
+                            <div class="text-white font-semibold mb-1">Tranquilidade do Cuidador</div>
+                            <div class="text-slate-400 text-sm">Confirmação em Tempo Real de cada dose tomada</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="faq" class="py-24 bg-slate-50">
+                <div class="max-w-3xl mx-auto px-6">
+                    <div class="text-center mb-16">
+                        <span
+                            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block">
+                            </span>FAQ</span>
+                        <h2 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight tracking-tight mt-4">
+                            Perguntas Frequentemente Feitas</h2>
+                        <p class="mt-4 text-lg text-slate-500">Tudo o que Você Precisa saber Sobre MediSync.</p>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="faq-item rounded-2xl bg-white border border-slate-100 overflow-hidden">
+                            <button
+                                class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left hover:bg-slate-50 transition-colors">
+                                <span class="font-semibold text-slate-900 pr-4">O MediSync é de fácil uso para pessoas
+                                    mais velhas?</span>
+                                <span
+                                    class="faq-icon flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                                    style="background: rgb(241, 245, 249); color: rgb(100, 116, 139);">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                        <path d="M6 9l6 6 6-6"></path>
+                                    </svg>
+                                </span>
+                            </button>
+
+                            <div class="faq-content border-t border-slate-100">
+                                <div class="faq-content-inner px-6 py-6 text-slate-600 leading-8">
+                                    Absolutamente. A caixa inteligente exige praticamente nenhuma interação do paciente.
+                                    Basta ouvir o alerta sonoro e retirar o medicamento no horário correto.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="faq-item rounded-2xl bg-white border border-slate-100 overflow-hidden">
+                            <button
+                                class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left hover:bg-slate-50 transition-colors">
+                                <span class="font-semibold text-slate-900 pr-4">O MediSync funciona sem internet?</span>
+                                <span
+                                    class="faq-icon flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                                    style="background: rgb(241, 245, 249); color: rgb(100, 116, 139);">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                        <path d="M6 9l6 6 6-6">
+                                        </path>
+                                    </svg>
+                                </span>
+                            </button>
+
+                            <div class="faq-content border-t border-slate-100">
+                                <div class="faq-content-inner px-6 py-6 text-slate-600 leading-8">
+                                    Não. O MediSync precisa de acesso a rede de internet para poder se comunicar com a caixa inteligente, porém
+                                    os dados no app não irão sumir, eles ficam salvos, mesmo sem rede Wi-fi.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="faq-item rounded-2xl bg-white border border-slate-100 overflow-hidden">
+                            <button
+                                class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left hover:bg-slate-50 transition-colors">
+                                <span class="font-semibold text-slate-900 pr-4">Múltiplos membros da família podem
+                                    monitorar remotamente?</span>
+                                <span
+                                    class="faq-icon flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                                    style="background: rgb(241, 245, 249); color: rgb(100, 116, 139);">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                        <path d="M6 9l6 6 6-6">
+                                        </path>
+                                    </svg>
+                                </span>
+                            </button>
+
+                            <div class="faq-content border-t border-slate-100">
+                                <div class="faq-content-inner px-6 py-6 text-slate-600 leading-8">
+                                    Sim. Vários cuidadores podem ser vinculados a um único dispositivo MediSync. 
+                                    Cada cuidador tem seu próprio login de aplicativo.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="faq-item rounded-2xl bg-white border border-slate-100 overflow-hidden">
+                            <button
+                                class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left hover:bg-slate-50 transition-colors">
+                                <span class="font-semibold text-slate-900 pr-4">Como os remédios são programados no
+                                    sistema?</span>
+                                <span
+                                    class="faq-icon flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                                    style="background: rgb(241, 245, 249); color: rgb(100, 116, 139);">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                        <path d="M6 9l6 6 6-6">
+                                        </path>
+                                    </svg>
+                                </span>
+                            </button>
+
+                            <div class="faq-content border-t border-slate-100">
+                                <div class="faq-content-inner px-6 py-6 text-slate-600 leading-8">
+                                    Através do aplicativo móvel MediSync (iOS ou Android). Os cuidadores criam perfis de medicamentos e 
+                                    definem horários em apenas alguns minutos. Os horários podem ser atualizados 
+                                    remotamente a qualquer momento.
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="faq-item rounded-2xl bg-white border border-slate-100 overflow-hidden">
+                            <button
+                                class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left hover:bg-slate-50 transition-colors">
+                                <span class="font-semibold text-slate-900 pr-4">O que acontece se uma dose não for
+                                    tomada?</span>
+                                <span
+                                    class="faq-icon flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                                    style="background: rgb(241, 245, 249); color: rgb(100, 116, 139);">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                        <path d="M6 9l6 6 6-6">
+                                        </path>
+                                    </svg>
+                                </span>
+                            </button>
+
+                            <div class="faq-content border-t border-slate-100">
+                                <div class="faq-content-inner px-6 py-6 text-slate-600 leading-8">
+                                    Se o sensor de peso detectar que a medicação não foi removida após a liberação, todos os 
+                                    cuidadores vinculados recebem uma notificação imediata e um alerta no aplicativo.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="waitlist" class="py-32 relative overflow-hidden"
+                style="background: linear-gradient(135deg, rgb(19, 78, 74) 0%, rgb(15, 118, 110) 40%, rgb(5, 150, 105) 100%);">
+                <div class="absolute inset-0 pointer-events-none"
+                    style="background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px); background-size: 32px 32px;">
+                </div>
+                <div class="absolute top-0 right-0 w-96 h-96 rounded-full opacity-20 pointer-events-none"
+                    style="background: radial-gradient(circle, rgb(153, 246, 228), transparent); transform: translate(40%, -40%);">
+                </div>
+                <div class="relative max-w-2xl mx-auto px-6 text-center">
+                    <div
+                        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-white/10 text-white border border-white/20 mb-8">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 inline-block">
+                        </span>Acesso Antecipado
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-bold text-white leading-tight mb-6">Seja um dos primeiros a
+                        conhecer o MediSync.</h2>
+                    <p class="text-lg text-emerald-100 mb-10">Junte-se à lista de espera e obtenha acesso antecipado,
+                        atualizações exclusivas e uma oferta especial de lançamento.</p>
+                    <form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                        <input placeholder="seu@email.com" required=""
+                            class="flex-1 px-5 py-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-white/40 text-base"
+                            type="email">
+                        <button type="submit"
+                            class="px-7 py-4 rounded-2xl text-base font-semibold text-emerald-900 bg-white hover:bg-emerald-50 transition-colors shadow-lg flex-shrink-0">Entre
+                            na <br>Lista de Espera</button>
+                    </form>
+                    <p class="mt-6 text-sm text-emerald-300">Sem spam. Cancele sua inscrição a qualquer momento.</p>
+                </div>
+            </section>
+            <footer class="bg-slate-900 text-slate-400 py-16">
+                <div class="max-w-6xl mx-auto px-6">
+                    <div class="grid md:grid-cols-4 gap-12 mb-12">
+                        <div class="md:col-span-2">
+                            <div class="flex items-center gap-2.5 mb-4">
+                                <img src="img/logo.png" alt="MediSync" class="logo">
+                                <span class="text-lg font-bold text-white">MediSync</span>
+                            </div>
+                            <p class="text-sm leading-relaxed max-w-xs">Administração inteligente de medicamentos para
+                                pacientes idosos e pessoas que cuidam deles.</p>
+                            <div class="flex gap-4 mt-6">
+                                <a href="#" aria-label="Twitter"
+                                    class="w-9 h-9 rounded-lg flex items-center justify-center bg-white/5 hover:bg-emerald-500 hover:text-white transition-colors text-slate-500">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                        <path
+                                            d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0016 2.5a4.48 4.48 0 00-4.48 4.48 4.32 4.32 0 00.12 1.02A12.74 12.74 0 013 3.8a4.52 4.52 0 001.39 5.99 4.42 4.42 0 01-2-.56v.06a4.47 4.47 0 003.58 4.38 4.53 4.53 0 01-2 .08 4.48 4.48 0 004.18 3.1A9 9 0 012 19.54a12.72 12.72 0 006.88 2.02c8.27 0 12.8-6.85 12.8-12.8v-.58A9.1 9.1 0 0023 3z">
+                                        </path>
+                                    </svg>
+                                </a>
+                                <a href="#" aria-label="LinkedIn"
+                                    class="w-9 h-9 rounded-lg flex items-center justify-center bg-white/5 hover:bg-emerald-500 hover:text-white transition-colors text-slate-500">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                        <path
+                                            d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z">
+                                        </path>
+                                    </svg>
+                                </a>
+                                <a href="#" aria-label="Instagram"
+                                    class="w-9 h-9 rounded-lg flex items-center justify-center bg-white/5 hover:bg-emerald-500 hover:text-white transition-colors text-slate-500">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                        <path
+                                            d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zM17.5 6.5h.01M7.55 21H3a2 2 0 01-2-2V5a2 2 0 012-2h16a2 2 0 012 2v14a2 2 0 01-2 2h-4.55">
+                                        </path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-white font-semibold mb-4 text-sm">Produto</div>
+                            <ul class="space-y-3">
+                                <li>
+                                    <a href="#" class="text-sm hover:text-emerald-400 transition-colors">Features</a>
+                                </li>
+                                <li>
+                                    <a href="#" class="text-sm hover:text-emerald-400 transition-colors">Como
+                                        Funciona</a>
+                                </li>
+                                <li>
+                                    <a href="#" class="text-sm hover:text-emerald-400 transition-colors">Securança</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <div class="text-white font-semibold mb-4 text-sm">Empresa</div>
+                            <ul class="space-y-3">
+                                <li>
+                                    <a href="#" class="text-sm hover:text-emerald-400 transition-colors">Sobre</a>
+                                </li>
+                                <li>
+                                    <a href="#" class="text-sm hover:text-emerald-400 transition-colors">Blog</a>
+                                </li>
+                                <li>
+                                    <a href="#" class="text-sm hover:text-emerald-400 transition-colors">Contato</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div
+                        class="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <p class="text-sm">© 2026 MediSync. All rights reserved.</p>
+                        <div class="flex gap-6 text-sm">
+                            <a href="#" class="hover:text-emerald-400 transition-colors">Privacy Policy</a>
+                            <a href="#" class="hover:text-emerald-400 transition-colors">Terms of Service</a>
+                            <a href="mailto:hello@medisync.io"
+                                class="hover:text-emerald-400 transition-colors">company@medisync.io</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
