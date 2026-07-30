@@ -36,6 +36,8 @@ function enviarNotificacaoPush(nomeCuidador, nomePaciente, nomeRemedio, status, 
   console.log(`📱 [PUSH NOTIFICATION] Enviando alerta para: ${nomeCuidador}`);
   if (status === 'Atrasado') {
     console.log(`⚠️ ALERTA DE EMERGÊNCIA: ${nomePaciente} está atrasado(a) com o remédio: ${nomeRemedio}!`);
+  } else if (status === 'Nao Tomado') {
+    console.log(`🚫 ALERTA: ${nomePaciente} NÃO tomou o remédio: ${nomeRemedio}!`);
   } else {
     console.log(`✅ AVISO: ${nomePaciente} tomou o remédio: ${nomeRemedio} no prazo.`);
   }
@@ -78,6 +80,89 @@ app.get('/api/dispositivo/:id', async (req, res) => {
   }
 });
 
+// 2.1 ROTA: CADASTRAR (OU ATUALIZAR) UM DISPOSITIVO / PACIENTE (POST)
+app.post('/api/dispositivo/cadastrar', async (req, res) => {
+  const {
+    id_dispositivo, nome_paciente, nome_cuidador,
+    telefone, telefone_paciente, token_notificacao
+  } = req.body;
+
+  if (!id_dispositivo || !nome_paciente || !nome_cuidador) {
+    return res.status(400).json({
+      erro: 'id_dispositivo, nome_paciente e nome_cuidador são obrigatórios!'
+    });
+  }
+
+  try {
+    const querySQL = `
+      INSERT INTO dispositivos
+        (id_dispositivo, nome_paciente, nome_cuidador, telefone, telefone_paciente, token_notificacao)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      ON CONFLICT (id_dispositivo) DO UPDATE SET
+        nome_paciente = EXCLUDED.nome_paciente,
+        nome_cuidador = EXCLUDED.nome_cuidador,
+        telefone = EXCLUDED.telefone,
+        telefone_paciente = EXCLUDED.telefone_paciente,
+        token_notificacao = COALESCE(EXCLUDED.token_notificacao, dispositivos.token_notificacao)
+      RETURNING *;
+    `;
+
+    const valores = [
+      id_dispositivo, nome_paciente, nome_cuidador,
+      telefone ?? null, telefone_paciente ?? telefone ?? null, token_notificacao ?? null
+    ];
+
+    const resultado = await db.query(querySQL, valores);
+
+    return res.status(201).json({
+      mensagem: 'Dispositivo cadastrado/vinculado com sucesso! 📟',
+      dados: resultado.rows[0]
+    });
+  } catch (error) {
+    console.error('Erro ao cadastrar dispositivo:', error);
+    return res.status(500).json({ erro: 'Erro interno ao salvar dispositivo no banco.' });
+  }
+});
+
+// 2.2 ROTA: VINCULAR NOVO CUIDADOR/FAMILIAR AO DISPOSITIVO (POST)
+app.post('/api/dispositivo/vincular-cuidador', async (req, res) => {
+  const { id_dispositivo, nome, email, telefone, papel } = req.body;
+
+  if (!id_dispositivo || !nome || !email) {
+    return res.status(400).json({ erro: 'id_dispositivo, nome e email são obrigatórios!' });
+  }
+
+  try {
+    // A. Cria ou busca o usuário pelo e-mail
+    let userRes = await db.query('SELECT id FROM usuarios WHERE email = $1', [email]);
+    let usuarioId;
+
+    if (userRes.rows.length === 0) {
+      const novoUser = await db.query(
+        'INSERT INTO usuarios (nome, email, telefone) VALUES ($1, $2, $3) RETURNING id',
+        [nome, email, telefone || null]
+      );
+      usuarioId = novoUser.rows[0].id;
+    } else {
+      usuarioId = userRes.rows[0].id;
+    }
+
+    // B. Vincula o usuário à caixa na tabela intermediária
+    await db.query(
+      'INSERT INTO dispositivo_cuidadores (id_dispositivo, id_usuario, papel) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+      [id_dispositivo, usuarioId, papel || 'familiar']
+    );
+
+    return res.status(201).json({ 
+      mensagem: 'Cuidador/Familiar vinculado com sucesso! 👥',
+      id_usuario: usuarioId 
+    });
+  } catch (error) {
+    console.error('Erro ao vincular cuidador:', error);
+    return res.status(500).json({ erro: 'Erro interno ao vincular cuidador.' });
+  }
+});
+
 // 3. ROTA: BUSCAR AGENDA DO DISPOSITIVO (GET)
 app.get('/api/dispositivo/:id/agenda', async (req, res) => {
   const idDispositivo = req.params.id; 
@@ -116,7 +201,6 @@ app.post('/api/medicamentos/agendar', async (req, res) => {
     ];
 
     const resultado = await db.query(querySQL, valores);
-
 
     io.emit('agenda_atualizada', resultado.rows[0]);
 
@@ -177,7 +261,7 @@ app.patch('/api/medicamentos/:id', async (req, res) => {
 
 // 6. ROTA: CONFIRMAÇÃO DO ESP32 OU DO APP (POST)
 app.post('/api/dispositivo/confirmacao', async (req, res) => {
-  const { id_dispositivo, nome_remedio, horario_programado } = req.body;
+  const { id_dispositivo, nome_remedio, horario_programado, status_manual } = req.body;
 
   if (!id_dispositivo || !nome_remedio || !horario_programado) {
     return res.status(400).json({ erro: 'id_dispositivo, nome_remedio e horario_programado são obrigatórios!' });
@@ -188,8 +272,9 @@ app.post('/api/dispositivo/confirmacao', async (req, res) => {
     const programado = new Date(horario_programado); 
     const diferencaEmMinutos = Math.abs(agora - programado) / (1000 * 60);
 
-    let status = 'No Prazo';
-    if (diferencaEmMinutos > 15) {
+    // Ajuste: Permite receber um status enviado manualmente ou calcula automaticamente
+    let status = status_manual || 'No Prazo';
+    if (!status_manual && diferencaEmMinutos > 15) {
       status = 'Atrasado';
     }
 
@@ -199,18 +284,21 @@ app.post('/api/dispositivo/confirmacao', async (req, res) => {
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *;
     `;
-    const valores = [id_dispositivo, nome_remedio, programado, agora, status];
+    const valores = [id_dispositivo, nome_remedio, programado, status === 'Nao Tomado' ? null : agora, status];
     const resultado = await db.query(querySQL, valores);
 
-    // B. Subtrai 1 do estoque do remédio
-    const queryEstoque = `
-      UPDATE horarios_medicamentos 
-      SET estoque = GREATEST(0, estoque - 1)
-      WHERE id_dispositivo = $1 AND nome_remedio = $2
-      RETURNING estoque;
-    `;
-    const resEstoque = await db.query(queryEstoque, [id_dispositivo, nome_remedio]);
-    const estoqueAtual = resEstoque.rows.length > 0 ? resEstoque.rows[0].estoque : null;
+    // B. Subtrai 1 do estoque (apenas se tiver tomado o remédio)
+    let estoqueAtual = null;
+    if (status !== 'Nao Tomado') {
+      const queryEstoque = `
+        UPDATE horarios_medicamentos 
+        SET estoque = GREATEST(0, estoque - 1)
+        WHERE id_dispositivo = $1 AND nome_remedio = $2
+        RETURNING estoque;
+      `;
+      const resEstoque = await db.query(queryEstoque, [id_dispositivo, nome_remedio]);
+      estoqueAtual = resEstoque.rows.length > 0 ? resEstoque.rows[0].estoque : null;
+    }
 
     // C. Busca dados do dispositivo e telefone do paciente
     const queryDispositivo = `
@@ -233,7 +321,7 @@ app.post('/api/dispositivo/confirmacao', async (req, res) => {
       enviarNotificacaoPush(nomeCuidador, nomePaciente, nome_remedio, status, estoqueAtual);
     }
 
-    
+    // Dispara alerta via WebSockets
     io.emit('nova_dose_registrada', {
       dose: resultado.rows[0],
       estoque_atual: estoqueAtual,
@@ -241,6 +329,8 @@ app.post('/api/dispositivo/confirmacao', async (req, res) => {
       alerta_atraso: status === 'Atrasado',
       mensagem: status === 'Atrasado'
         ? `⚠️ ATENÇÃO: ${nomePaciente} atrasou o remédio ${nomeRemedio}! Ligue para o paciente.`
+        : status === 'Nao Tomado'
+        ? `🚫 ATENÇÃO: ${nomePaciente} NÃO tomou a dose de ${nomeRemedio}.`
         : `✅ ${nomePaciente} tomou ${nomeRemedio} no prazo.`
     });
 
@@ -298,7 +388,7 @@ app.delete('/api/medicamentos/:id', async (req, res) => {
   }
 });
 
-// ATENÇÃO: Mudamos para server.listen para o WebSockets funcionar junto com o Express!
+// ATENÇÃO: Servidor HTTP + WebSockets ativo na porta 3000
 server.listen(PORT, () => {
   console.log(`🚀 Servidor HTTP + WebSockets rodando na porta ${PORT}`);
 });
