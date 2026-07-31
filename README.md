@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./assets/readme/logo.png" alt="MediSync" width="120">
+</p>
+
 <h1 align="center">MediSync</h1>
 
 <h4 align="center">
@@ -13,8 +17,14 @@ Dispensador Inteligente de Medicamentos integrado a um ecossistema de cuidado e 
 </p>
 
 <p align="center">
+  <a href="https://luisacampanhah.github.io/Hackathon-MediSync/"><b>🌐 Landing Page</b></a> ·
+  <a href="https://hackathon-medi-sync.vercel.app/"><b>📱 Abrir o App</b></a>
+</p>
+
+<p align="center">
 <a href="#-o-problema">O Problema</a> •
 <a href="#-a-solução">A Solução</a> •
+<a href="#-demo">Demo</a> •
 <a href="#-arquitetura-do-sistema">Arquitetura</a> •
 <a href="#-tecnologias">Tecnologias</a> •
 <a href="#-como-executar">Como Executar</a> •
@@ -37,9 +47,25 @@ O **MediSync** atua como uma ponte entre o paciente e seu cuidador. Nosso ecossi
 
 ---
 
+## 🎬 Demo
+
+| Landing Page | App (Cuidador) |
+|:---:|:---:|
+| [luisacampanhah.github.io/Hackathon-MediSync](https://luisacampanhah.github.io/Hackathon-MediSync/) | [hackathon-medi-sync.vercel.app](https://hackathon-medi-sync.vercel.app/) |
+
+<p align="center">
+  <img src="./assets/readme/app-screens.png" alt="Telas do app MediSync" width="520">
+</p>
+
+---
+
 ## 🏗️ Arquitetura do Sistema
 
 O fluxo de dados foi desenhado para ser resiliente e autônomo:
+
+<p align="center">
+  <img src="./assets/readme/architecture.svg" alt="Diagrama de arquitetura do MediSync" width="850">
+</p>
 
 1. **App (Cuidador):** Cadastra a rotina médica. A API salva no banco de dados.
 2. **IoT (ESP32):** Sincroniza via NTP e consulta o servidor (`polling`) para buscar a agenda do dia.
@@ -68,6 +94,9 @@ A stack escolhida visa performance, facilidade de prototipação e estabilidade:
 - **Banco de Dados:** PostgreSQL (via Docker)
 - **Arquitetura:** REST API
 
+### Landing Page
+- HTML, CSS e JavaScript puro — publicada automaticamente via GitHub Actions (`.github/workflows/deploy-pages.yml`) sempre que a pasta `Landing Page/` muda na branch `main`.
+
 ---
 
 ## 🚀 Como Executar
@@ -75,8 +104,8 @@ A stack escolhida visa performance, facilidade de prototipação e estabilidade:
 Clone o projeto para a sua máquina local:
 
 ```bash
-git clone https://github.com/SEU-USUARIO/MediSync.git
-cd MediSync
+git clone https://github.com/LuisaCampanhaH/Hackathon-MediSync.git
+cd Hackathon-MediSync
 ```
 
 ### 1. Inicializando o Backend
@@ -106,6 +135,19 @@ npx expo start
 4. Compile e faça o upload de `dispensador_integrado_backend.ino` para o ESP32 usando a Arduino IDE.
 
 > **Nota de Segurança:** Os arquivos `.env` e `secrets.h` estão no `.gitignore` para proteger dados sensíveis.
+
+---
+
+## 📁 Estrutura do Repositório
+
+```
+Hackathon-MediSync/
+├── Landing Page/     # Site estático (publicado no GitHub Pages)
+├── FrontEnd/         # App React Native / Expo (publicado no Vercel)
+├── BackEnd/          # API Node.js + PostgreSQL
+├── HardWare/         # Firmware ESP32 (Arduino/C++)
+└── assets/readme/    # Imagens e diagramas usados neste README
+```
 
 ---
 
