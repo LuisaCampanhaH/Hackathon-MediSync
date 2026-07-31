@@ -279,15 +279,37 @@ export default function AddMedicationScreen({
                 >
                   Escolha o horário e confirme
                 </Text>
-                <DateTimePicker
-                  value={draftTime}
-                  mode="time"
-                  is24Hour
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={onPickerChange}
-                  themeVariant={isDark ? 'dark' : 'light'}
-                />
-                {Platform.OS === 'ios' && (
+                {Platform.OS === 'web' ? (
+                  <input
+                    type="time"
+                    value={`${String(draftTime.getHours()).padStart(2, '0')}:${String(draftTime.getMinutes()).padStart(2, '0')}`}
+                    onChange={(e) => {
+                      const [hours, minutes] = e.target.value.split(':').map(Number);
+                      if (Number.isNaN(hours) || Number.isNaN(minutes)) return;
+                      const next = new Date(draftTime);
+                      next.setHours(hours, minutes);
+                      setDraftTime(next);
+                    }}
+                    style={{
+                      fontSize: 17,
+                      padding: 14,
+                      borderRadius: radii.md,
+                      border: `1.5px solid ${colors.primary}`,
+                      backgroundColor: colors.surface,
+                      color: colors.textPrimary,
+                    }}
+                  />
+                ) : (
+                  <DateTimePicker
+                    value={draftTime}
+                    mode="time"
+                    is24Hour
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={onPickerChange}
+                    themeVariant={isDark ? 'dark' : 'light'}
+                  />
+                )}
+                {Platform.OS !== 'android' && (
                   <XStack gap={space.sm}>
                     <Pressable style={{ flex: 1 }} onPress={() => setShowPicker(false)}>
                       <YStack

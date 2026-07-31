@@ -328,10 +328,10 @@ app.post('/api/dispositivo/confirmacao', async (req, res) => {
       telefone_paciente: telefonePaciente,
       alerta_atraso: status === 'Atrasado',
       mensagem: status === 'Atrasado'
-        ? `⚠️ ATENÇÃO: ${nomePaciente} atrasou o remédio ${nomeRemedio}! Ligue para o paciente.`
+        ? `⚠️ ATENÇÃO: ${nomePaciente} atrasou o remédio ${nome_remedio}! Ligue para o paciente.`
         : status === 'Nao Tomado'
-        ? `🚫 ATENÇÃO: ${nomePaciente} NÃO tomou a dose de ${nomeRemedio}.`
-        : `✅ ${nomePaciente} tomou ${nomeRemedio} no prazo.`
+        ? `🚫 ATENÇÃO: ${nomePaciente} NÃO tomou a dose de ${nome_remedio}.`
+        : `✅ ${nomePaciente} tomou ${nome_remedio} no prazo.`
     });
 
     return res.status(201).json({

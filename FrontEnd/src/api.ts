@@ -1,7 +1,7 @@
 // Cliente HTTP fino pra API do BackEnd (ver BackEnd/README.md pras rotas).
 // Sem lib nova — fetch já resolve.
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
 
 export interface HorarioMedicamento {
   id: number;
