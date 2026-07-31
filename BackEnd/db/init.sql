@@ -61,6 +61,11 @@ CREATE TABLE IF NOT EXISTS dispositivo_cuidadores (
     papel VARCHAR(30) DEFAULT 'familiar'
 );
 
+-- Garante que a coluna exista mesmo em bancos onde a tabela "dispositivos" já
+-- tinha sido criada ANTES dessa coluna existir (CREATE TABLE IF NOT EXISTS não
+-- altera tabelas já existentes, só cria as que faltam).
+ALTER TABLE dispositivos ADD COLUMN IF NOT EXISTS telefone_paciente VARCHAR(20);
+
 -- DADOS DE TESTE INICIAIS
 INSERT INTO dispositivos (id_dispositivo, nome_paciente, nome_cuidador, telefone, telefone_paciente)
 VALUES ('ESP32-TESTE-01', 'Maria Oliveira', 'Luan Oliveira', '+5511999998888', '+5511999998888')
