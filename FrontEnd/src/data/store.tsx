@@ -5,7 +5,9 @@
 // continuam calculadas no cliente.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { io } from 'socket.io-client';
 import {
+  API_URL,
   confirmarDose,
   createHorario,
   deleteHorario,
@@ -19,6 +21,7 @@ import {
 import {
   cancelDoseNotifications,
   LATE_REMINDER_MINUTES,
+  notifyNow,
   scheduleDoseNotifications,
   type DoseNotificationIds,
 } from '../notifications';
@@ -339,6 +342,53 @@ export function PatientDataProvider({ children }: { children: React.ReactNode })
     load();
   }, [load]);
 
+  // O backend avisa por WebSocket sempre que a agenda, o histórico de doses
+  // ou os medicamentos mudam — inclusive quando é o ESP32 quem confirma (ou
+  // não) uma dose. Recarrega os dados pra refletir isso sem precisar de
+  // polling, e dispara uma notificação local pro cuidador ver na hora.
+  useEffect(() => {
+    const socket = io(API_URL);
+
+    function refreshIfOurDevice(payload: { id_dispositivo?: string }) {
+      if (!payload.id_dispositivo || payload.id_dispositivo === DEVICE_ID) load();
+    }
+
+    socket.on('agenda_atualizada', refreshIfOurDevice);
+
+    socket.on(
+      'nova_dose_registrada',
+      (payload: {
+        dose?: { id_dispositivo?: string; nome_remedio?: string; status?: string };
+        estoque_atual?: number | null;
+        mensagem?: string;
+      }) => {
+        refreshIfOurDevice(payload.dose ?? {});
+        if (payload.dose?.id_dispositivo && payload.dose.id_dispositivo !== DEVICE_ID) return;
+
+        const title =
+          payload.dose?.status === 'Atrasado'
+            ? 'MediSync — Atraso na medicação'
+            : payload.dose?.status === 'Nao Tomado'
+              ? 'MediSync — Dose não tomada'
+              : 'MediSync';
+        if (payload.mensagem) notifyNow(title, payload.mensagem).catch(() => {});
+
+        if (payload.estoque_atual != null && payload.estoque_atual <= 3) {
+          notifyNow(
+            'MediSync — Estoque baixo',
+            `Restam apenas ${payload.estoque_atual} comprimidos de ${payload.dose?.nome_remedio ?? 'um medicamento'}!`
+          ).catch(() => {});
+        }
+      }
+    );
+
+    socket.on('medicamento_deletado', () => load());
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [load]);
+
   const doseLog = useMemo(() => computeTodayDoseLog(medications, historico), [medications, historico]);
   const adherence = useMemo(() => computeAdherence(medications, historico), [medications, historico]);
 
@@ -355,9 +405,11 @@ export function PatientDataProvider({ children }: { children: React.ReactNode })
         if (dose.status === 'taken' || notifIds.current.has(dose.id)) return;
         const med = medications.find((m) => m.id === dose.medicationId);
         if (!med) return;
-        scheduleDoseNotifications(patientName, med.name, med.dosage, dose.scheduledTime).then((ids) => {
-          notifIds.current.set(dose.id, ids);
-        });
+        scheduleDoseNotifications(patientName, med.name, med.dosage, dose.scheduledTime)
+          .then((ids) => {
+            notifIds.current.set(dose.id, ids);
+          })
+          .catch(() => {});
       });
   }, [doseLog, medications, patientName]);
 
