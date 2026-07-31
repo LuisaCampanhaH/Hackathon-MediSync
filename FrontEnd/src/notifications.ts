@@ -40,12 +40,16 @@ export interface DoseNotificationIds {
   lateNotifyId?: string;
 }
 
+// expo-notifications has no web implementation at all (every call throws
+// UnavailabilityError there) — skip it on web instead of letting that throw
+// bubble up as an unhandled rejection on every dose list refresh.
 export async function scheduleDoseNotifications(
   patientName: string,
   medName: string,
   medDosage: string,
   scheduledTime: string
 ): Promise<DoseNotificationIds> {
+  if (Platform.OS === 'web') return {};
   const doseAt = nextOccurrence(scheduledTime);
   const lateAt = new Date(doseAt.getTime() + LATE_REMINDER_MINUTES * 60000);
 
@@ -70,7 +74,16 @@ export async function scheduleDoseNotifications(
   return { notifyId, lateNotifyId };
 }
 
+export async function notifyNow(title: string, body: string) {
+  if (Platform.OS === 'web') return;
+  await Notifications.scheduleNotificationAsync({
+    content: { title, body, sound: 'default' },
+    trigger: null,
+  });
+}
+
 export async function cancelDoseNotifications(ids: DoseNotificationIds) {
+  if (Platform.OS === 'web') return;
   if (ids.notifyId) await Notifications.cancelScheduledNotificationAsync(ids.notifyId);
   if (ids.lateNotifyId) await Notifications.cancelScheduledNotificationAsync(ids.lateNotifyId);
 }
