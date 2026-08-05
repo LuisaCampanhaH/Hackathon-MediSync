@@ -24,6 +24,7 @@ export default function AlertScreen({ navigate, doseId }: { navigate: Navigate; 
     : patient.doseLog.find((d) => d.status === 'late');
   const med = dose ? getMedication(patient, dose.medicationId) : undefined;
 
+  // ✨ CORRIGIDO: Adiciona delay após confirmação para garantir sync
   async function handleManualConfirm() {
     if (!dose) {
       navigate('dashboard');
@@ -32,6 +33,11 @@ export default function AlertScreen({ navigate, doseId }: { navigate: Navigate; 
     setConfirming(true);
     try {
       await markDoseTaken(dose.id);
+      
+      // ✨ NOVO: Aguarda 1 segundo adicional para garantir que a UI
+      // recebeu a atualização via WebSocket e refrescou o estado
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       navigate('dashboard');
     } catch (e) {
       Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível confirmar a dose.');
