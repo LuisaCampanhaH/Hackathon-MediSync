@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Linking, Pressable } from 'react-native';
+import { Alert, Linking, Platform, Pressable } from 'react-native';
 import { YStack, XStack, Text } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
 
@@ -40,7 +40,10 @@ export default function AlertScreen({ navigate, doseId }: { navigate: Navigate; 
       
       navigate('dashboard');
     } catch (e) {
-      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível confirmar a dose.');
+      const msg = e instanceof Error ? e.message : 'Não foi possível confirmar a dose.';
+      // Alert.alert não mostra nada no react-native-web.
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Erro', msg);
     } finally {
       setConfirming(false);
     }
