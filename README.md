@@ -54,7 +54,7 @@ O **MediSync** atua como uma ponte entre o paciente e seu cuidador. Nosso ecossi
 | [luisacampanhah.github.io/Hackathon-MediSync](https://luisacampanhah.github.io/Hackathon-MediSync/) | [hackathon-medi-sync.vercel.app](https://hackathon-medi-sync.vercel.app/) |
 
 <p align="center">
-  <img src="./assets/readme/app-screens.png" alt="Telas do app MediSync" width="520">
+  <img src="./assets/readme/demo.gif" alt="Demonstração do dispensador MediSync em funcionamento" width="360">
 </p>
 
 ---
