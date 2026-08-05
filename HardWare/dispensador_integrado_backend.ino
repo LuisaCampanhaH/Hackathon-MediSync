@@ -184,10 +184,8 @@ int pulsoDoRemedio(String nome) {
   return PULSO_SAIDA; 
 }
 
-// ================== DISPENSAR ==================
-void dispensarRemedio(String nomeRemedio) {
-  Serial.println("\n>>> HORA DO REMEDIO: " + nomeRemedio + " <<<");
-  
+// ================== APITO + LED VERMELHO (ALERTA) ==================
+void apitarAlerta() {
   for (int i = 0; i < 5; i++) {
     digitalWrite(PINO_BUZZER, HIGH);
     digitalWrite(PINO_LED_VERMELHO, HIGH);
@@ -196,35 +194,68 @@ void dispensarRemedio(String nomeRemedio) {
     digitalWrite(PINO_LED_VERMELHO, LOW);
     delay(200);
   }
-  
-  delay(1000); 
+}
 
+// ================== PISCA VERDE 3X (CONFIRMAÇÃO DO BOTÃO) ==================
+void piscarConfirmacao() {
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(PINO_LED_VERDE, HIGH);
+    delay(150);
+    digitalWrite(PINO_LED_VERDE, LOW);
+    delay(150);
+  }
+}
+
+// ================== DISPENSAR ==================
+void dispensarRemedio(String nomeRemedio) {
+  Serial.println("\n>>> HORA DO REMEDIO: " + nomeRemedio + " <<<");
+
+  // 1) Avisa com apito + LED vermelho antes de mexer no servo
+  apitarAlerta();
+  delay(500);
+
+  // 2) Apito para (fica em silêncio) enquanto o servo trabalha
   Serial.println("Abrindo gaveta...");
   meuServo.writeMicroseconds(pulsoDoRemedio(nomeRemedio));
   delay(2500); // 2,5 segundos para o remédio cair
-  
+
   Serial.println("Fechando gaveta...");
   meuServo.writeMicroseconds(PULSO_SAIDA);
-  delay(1000); 
-  
-  digitalWrite(PINO_LED_VERDE, HIGH);
+  delay(1000);
+
+  // 3) Servo desligou (voltou pra posição de repouso) -> apito volta a avisar
+  Serial.println("Servo desligado. Avisando novamente...");
+  apitarAlerta();
+
+  // 4) Espera o paciente apertar o botão, com o LED verde piscando
   Serial.println("Aguardando paciente apertar o botão...");
-  
+
   bool confirmado = false;
   unsigned long inicioEspera = millis();
-  
-  while (millis() - inicioEspera < 300000) { 
+  unsigned long ultimoPisca = millis();
+  bool ledAceso = false;
+  const unsigned long INTERVALO_PISCA_MS = 400;
+
+  while (millis() - inicioEspera < 300000) {
     if (digitalRead(PINO_BOTAO1) == LOW) {
       confirmado = true;
       break;
     }
-    delay(100);
+
+    if (millis() - ultimoPisca >= INTERVALO_PISCA_MS) {
+      ledAceso = !ledAceso;
+      digitalWrite(PINO_LED_VERDE, ledAceso ? HIGH : LOW);
+      ultimoPisca = millis();
+    }
+
+    delay(20);
   }
-  
+
   digitalWrite(PINO_LED_VERDE, LOW);
-  
+
   if (confirmado) {
     Serial.println("-> Botao apertado! Remedio confirmado.");
+    piscarConfirmacao();
     enviarConfirmacao(nomeRemedio);
   } else {
     Serial.println("-> TEMPO ESGOTADO. Remedio NAO confirmado.");
