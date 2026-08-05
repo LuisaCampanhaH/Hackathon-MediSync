@@ -278,21 +278,44 @@ function computeAdherence(medications: Medication[], historico: HistoricoDose[])
     if (d.horario_tomado) onTime++;
   }
 
+  const proximas7Dias = Array.from({ length: 7 }, (_, i) => {
+    const day = new Date(today);
+    day.setDate(day.getDate() - 6 + i);
+    const dosesForDay = computeDoseLogForDay(medications, historico, day);
+    const takenToday = dosesForDay.filter((d) => d.status === 'taken').length;
+    return {
+      label: DAY_LABELS[day.getDay()],
+      taken: takenToday,
+      missed: dosesForDay.length - takenToday,
+    };
+  });
+
+  // Streak: dias consecutivos (terminando hoje/ontem) sem doses atrasadas/perdidas.
+  // 'pending' (ainda não venceu, ex: dose de hoje à noite) não quebra a
+  // sequência — só 'late' (perdida/atrasada) conta como falha.
+  let streakDays = 0;
+  for (let offset = 0; offset <= MAX_LOOKAHEAD_DAYS; offset++) {
+    const day = new Date(today);
+    day.setDate(day.getDate() - offset);
+    const dosesForDay = computeDoseLogForDay(medications, historico, day);
+    if (dosesForDay.length === 0) continue;
+    const hasMissed = dosesForDay.some((d) => d.status === 'late');
+    if (hasMissed) break;
+    streakDays++;
+  }
+
   return {
     percentualAderencia: scheduled === 0 ? 0 : Math.round((onTime / scheduled) * 100),
     dosagemHoje: dosesNasSeteAmostras,
     aderenciaProximosDias: expectedInSevenDays,
-    proximas7Dias: Array.from({ length: 7 }, (_, i) => {
-      const day = new Date(today);
-      day.setDate(day.getDate() - 6 + i);
-      const dosesForDay = computeDoseLogForDay(medications, historico, day);
-      const takenToday = dosesForDay.filter((d) => d.status === 'taken').length;
-      return {
-        label: DAY_LABELS[day.getDay()],
-        taken: takenToday,
-        missed: dosesForDay.length - takenToday,
-      };
-    }),
+    proximas7Dias,
+    adherenceStats: {
+      scheduled,
+      onTime,
+      late: scheduled - onTime,
+    },
+    weeklyAdherence: proximas7Dias,
+    streakDays,
   };
 }
 
@@ -312,6 +335,9 @@ interface StoreValue {
   dosagemHoje: number;
   proximas7Dias: AdherenceDay[];
   aderenciaProximosDias: number;
+  adherenceStats: { scheduled: number; onTime: number; late: number };
+  weeklyAdherence: AdherenceDay[];
+  streakDays: number;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -384,12 +410,12 @@ export function PatientDataProvider({ children }: { children: React.ReactNode })
       }) => {
         // ✨ MELHORADO: Verifica id_dispositivo em dois lugares
         const idDispositivo = payload.id_dispositivo || payload.dose?.id_dispositivo;
-        
+
         // Se vem de outro dispositivo, ignora
         if (idDispositivo && idDispositivo !== DEVICE_ID) {
           return;
         }
-        
+
         // Se é nosso dispositivo (ou não conseguiu identificar), recarrega
         load();
 
@@ -536,24 +562,24 @@ export function PatientDataProvider({ children }: { children: React.ReactNode })
     const dose = doseLog.find((d) => d.id === doseId);
     const med = dose && medications.find((m) => m.id === dose.medicationId);
     if (!dose || !med) return;
-    
+
     const ids = notifIds.current.get(dose.id);
     if (ids) {
       await cancelDoseNotifications(ids);
       notifIds.current.delete(dose.id);
     }
-    
+
     // Envia a confirmação ao backend
     await confirmarDose({
       id_dispositivo: DEVICE_ID,
       nome_remedio: med.name,
       horario_programado: dose.scheduledAt,
     });
-    
+
     // ✨ NOVO: Aguarda um delay seguro para garantir que o backend
     // finalizou a escrita no banco de dados antes de recarregar
     await new Promise(resolve => setTimeout(resolve, CONFIRMACAO_DELAY_MS));
-    
+
     // Agora recarrega os dados
     await load();
   }
