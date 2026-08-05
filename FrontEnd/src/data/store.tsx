@@ -349,6 +349,19 @@ export function PatientDataProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     const socket = io(API_URL);
 
+    // Reconexão (ex: backend no Render hibernou e voltou, wifi caiu e
+    // voltou) — qualquer evento perdido durante a desconexão nunca vai
+    // chegar via socket, já que ninguém tava ouvindo. Sem isso o app fica
+    // travado nos dados de antes da queda até o usuário fechar e reabrir.
+    let isFirstConnect = true;
+    socket.on('connect', () => {
+      if (isFirstConnect) {
+        isFirstConnect = false;
+        return;
+      }
+      load();
+    });
+
     function refreshIfOurDevice(payload: { id_dispositivo?: string }) {
       if (!payload.id_dispositivo || payload.id_dispositivo === DEVICE_ID) load();
     }
