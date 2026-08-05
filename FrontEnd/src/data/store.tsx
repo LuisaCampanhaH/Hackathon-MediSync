@@ -148,22 +148,33 @@ function groupMedications(horarios: HorarioMedicamento[]): Medication[] {
   return [...groups.values()];
 }
 
-// Compara um timestamp vindo do back com uma data/hora local, tolerando a
-// ida e volta por TIMESTAMP sem timezone do Postgres (ver nota no plan.md).
+// Compara um timestamp vindo do back com uma data/hora local.
+//
+// BUG DE FUSO HORÁRIO (era o motivo de o botão do hardware não atualizar o
+// app): a coluna horario_programado/horario_tomado no Postgres é
+// TIMESTAMP SEM TIMEZONE. O ESP32 manda a hora local de Brasília "nua"
+// (ex: "08:00:00", sem offset). O Postgres grava esse valor literalmente,
+// mas o driver node-postgres, ao ler essa coluna de volta, relabela esses
+// mesmos dígitos como se fossem UTC. Se a gente usasse getHours()/getMinutes()
+// aqui, o JS converteria esse "UTC" pro fuso local do celular, deslocando o
+// horário (ex: 08:00 vira 05:00 num celular em UTC-3) — daí a dose nunca
+// batia com o horário agendado e o app continuava mostrando "pending" mesmo
+// com a confirmação já salva no banco. Usar os getters *UTC* aqui desfaz
+// esse relabel e recupera os dígitos originais que o ESP32 enviou.
 function sameSlot(iso: string, scheduled: Date) {
   const a = new Date(iso);
   return (
-    a.getFullYear() === scheduled.getFullYear() &&
-    a.getMonth() === scheduled.getMonth() &&
-    a.getDate() === scheduled.getDate() &&
-    a.getHours() === scheduled.getHours() &&
-    a.getMinutes() === scheduled.getMinutes()
+    a.getUTCFullYear() === scheduled.getFullYear() &&
+    a.getUTCMonth() === scheduled.getMonth() &&
+    a.getUTCDate() === scheduled.getDate() &&
+    a.getUTCHours() === scheduled.getHours() &&
+    a.getUTCMinutes() === scheduled.getMinutes()
   );
 }
 
 function toHHMM(iso: string) {
   const d = new Date(iso);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
 }
 
 function scheduledAtFor(day: Date, time: string) {
