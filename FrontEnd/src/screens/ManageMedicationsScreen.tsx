@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Pressable } from 'react-native';
+import { Alert, Platform, Pressable } from 'react-native';
 import { ScrollView, YStack, XStack, Text } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
 
@@ -8,29 +8,46 @@ import { radii, shadow, space } from '../theme/tokens';
 import { usePatientData, type Medication } from '../data/store';
 import type { Navigate } from '../../App';
 
+// Alert.alert não tem UI própria no react-native-web (não mostra nada e não
+// dispara os botões), então no browser o "Excluir" parecia não fazer nada.
+// window.confirm/alert cobrem o caso web; fora dele usamos o Alert nativo normal.
+function confirmAsync(title: string, message: string): Promise<boolean> {
+  if (Platform.OS === 'web') {
+    return Promise.resolve(window.confirm(`${title}\n\n${message}`));
+  }
+  return new Promise((resolve) => {
+    Alert.alert(title, message, [
+      { text: 'Cancelar', style: 'cancel', onPress: () => resolve(false) },
+      { text: 'Excluir', style: 'destructive', onPress: () => resolve(true) },
+    ]);
+  });
+}
+
+function alertError(message: string) {
+  if (Platform.OS === 'web') {
+    window.alert(message);
+    return;
+  }
+  Alert.alert('Erro', message);
+}
+
 export default function ManageMedicationsScreen({ navigate }: { navigate: Navigate }) {
   const { colors } = useAppTheme();
   const { patient, deleteMedication } = usePatientData();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  function handleDelete(med: Medication) {
-    Alert.alert('Excluir medicamento', `Remover ${med.name} da lista de medicamentos?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Excluir',
-        style: 'destructive',
-        onPress: async () => {
-          setDeletingId(med.id);
-          try {
-            await deleteMedication(med.id);
-          } catch (e) {
-            Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível excluir.');
-          } finally {
-            setDeletingId(null);
-          }
-        },
-      },
-    ]);
+  async function handleDelete(med: Medication) {
+    const confirmed = await confirmAsync('Excluir medicamento', `Remover ${med.name} da lista de medicamentos?`);
+    if (!confirmed) return;
+
+    setDeletingId(med.id);
+    try {
+      await deleteMedication(med.id);
+    } catch (e) {
+      alertError(e instanceof Error ? e.message : 'Não foi possível excluir.');
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   return (
