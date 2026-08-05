@@ -31,6 +31,9 @@ import {
 const DEVICE_ID = process.env.EXPO_PUBLIC_DEVICE_ID ?? 'ESP32-TESTE-01';
 const FALLBACK_PATIENT_NAME = process.env.EXPO_PUBLIC_PATIENT_NAME ?? 'Paciente';
 
+// ✨ NOVO: Constante para delay seguro
+const CONFIRMACAO_DELAY_MS = 500;
+
 export type DoseStatus = 'pending' | 'taken' | 'late';
 
 interface WeekdayFlags {
@@ -248,56 +251,44 @@ function computeAdherence(medications: Medication[], historico: HistoricoDose[])
 
   let scheduled = 0;
   let onTime = 0;
-  let late = 0;
-  const days: AdherenceDay[] = [];
 
-  for (let offset = 6; offset >= 0; offset--) {
-    const day = new Date(today);
-    day.setDate(day.getDate() - offset);
-    const weekdayField = WEEKDAY_FIELDS[day.getDay()];
-    let dayTaken = 0;
-    let dayMissed = 0;
+  // Conta as doses completadas (horario_tomado !== null) nos últimos 7 dias
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    medications.forEach((med) => {
-      med.slots.forEach((slot) => {
-        if (!slot[weekdayField]) return;
-        const scheduledAt = scheduledAtFor(day, slot.time);
-        if (scheduledAt.getTime() > Date.now()) return; // ainda não chegou a hora
+  const dosesNasSeteAmostras = computeDoseLogForDay(medications, historico, today).length;
+  const expectedInSevenDays = dosesNasSeteAmostras * 7;
 
-        scheduled++;
-        const match = findConfirmedMatch(historico, med.name, scheduledAt);
-        if (match) {
-          dayTaken++;
-          if (match.status === 'Atrasado') late++;
-          else onTime++;
-        } else {
-          // "Não Tomado" (com ou sem linha no histórico) ou ainda sem
-          // confirmação mesmo já tendo passado do horário = falha.
-          dayMissed++;
-          late++;
-        }
-      });
-    });
-
-    days.push({ label: DAY_LABELS[day.getDay()], taken: dayTaken, missed: dayMissed });
+  for (const d of historico) {
+    const doseDate = new Date(d.horario_programado);
+    doseDate.setHours(0, 0, 0, 0);
+    if (doseDate < sevenDaysAgo) continue;
+    scheduled++;
+    if (d.horario_tomado) onTime++;
   }
 
-  let streakDays = 0;
-  for (let i = days.length - 1; i >= 0; i--) {
-    if (days[i].missed === 0) streakDays++;
-    else break;
-  }
-
-  return { weeklyAdherence: days, adherenceStats: { scheduled, onTime, late }, streakDays };
+  return {
+    percentualAderencia: scheduled === 0 ? 0 : Math.round((onTime / scheduled) * 100),
+    dosagemHoje: dosesNasSeteAmostras,
+    aderenciaProximosDias: expectedInSevenDays,
+    proximas7Dias: Array.from({ length: 7 }, (_, i) => {
+      const day = new Date(today);
+      day.setDate(day.getDate() - 6 + i);
+      const dosesForDay = computeDoseLogForDay(medications, historico, day);
+      const takenToday = dosesForDay.filter((d) => d.status === 'taken').length;
+      return {
+        label: DAY_LABELS[day.getDay()],
+        taken: takenToday,
+        missed: dosesForDay.length - takenToday,
+      };
+    }),
+  };
 }
 
 interface StoreValue {
   patient: Patient;
   loading: boolean;
   error: string | null;
-  weeklyAdherence: AdherenceDay[];
-  adherenceStats: { scheduled: number; onTime: number; late: number };
-  streakDays: number;
   refresh: () => Promise<void>;
   addMedication: (input: { name: string; dosage: string; stock: number; times: string[] }) => Promise<void>;
   updateMedication: (
@@ -306,6 +297,10 @@ interface StoreValue {
   ) => Promise<void>;
   deleteMedication: (medicationId: string) => Promise<void>;
   markDoseTaken: (doseId: string) => Promise<void>;
+  percentualAderencia: number;
+  dosagemHoje: number;
+  proximas7Dias: AdherenceDay[];
+  aderenciaProximosDias: number;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -371,13 +366,31 @@ export function PatientDataProvider({ children }: { children: React.ReactNode })
     socket.on(
       'nova_dose_registrada',
       (payload: {
+        id_dispositivo?: string; // ✨ NOVO: Pode vir no root do payload
         dose?: { id_dispositivo?: string; nome_remedio?: string; status?: string };
         estoque_atual?: number | null;
         mensagem?: string;
       }) => {
-        refreshIfOurDevice(payload.dose ?? {});
-        if (payload.dose?.id_dispositivo && payload.dose.id_dispositivo !== DEVICE_ID) return;
+        // ✨ MELHORADO: Verifica id_dispositivo em dois lugares
+        const idDispositivo = payload.id_dispositivo || payload.dose?.id_dispositivo;
+        
+        // Se vem de outro dispositivo, ignora
+        if (idDispositivo && idDispositivo !== DEVICE_ID) {
+          return;
+        }
+        
+        // Se é nosso dispositivo (ou não conseguiu identificar), recarrega
+        load();
 
+        // Se temos estoque baixo, avisa
+        if (payload.estoque_atual != null && payload.estoque_atual <= 3) {
+          notifyNow(
+            'MediSync — Estoque baixo',
+            `Restam apenas ${payload.estoque_atual} comprimidos de ${payload.dose?.nome_remedio ?? 'um medicamento'}!`
+          ).catch(() => {});
+        }
+
+        // Se tem mensagem, mostra notificação
         const title =
           payload.dose?.status === 'Atrasado'
             ? 'MediSync — Atraso na medicação'
@@ -385,13 +398,6 @@ export function PatientDataProvider({ children }: { children: React.ReactNode })
               ? 'MediSync — Dose não tomada'
               : 'MediSync';
         if (payload.mensagem) notifyNow(title, payload.mensagem).catch(() => {});
-
-        if (payload.estoque_atual != null && payload.estoque_atual <= 3) {
-          notifyNow(
-            'MediSync — Estoque baixo',
-            `Restam apenas ${payload.estoque_atual} comprimidos de ${payload.dose?.nome_remedio ?? 'um medicamento'}!`
-          ).catch(() => {});
-        }
       }
     );
 
@@ -514,20 +520,30 @@ export function PatientDataProvider({ children }: { children: React.ReactNode })
     await load();
   }
 
+  // ✨ CORRIGIDO: Adicionar delay seguro antes de recarregar
   async function markDoseTaken(doseId: string) {
     const dose = doseLog.find((d) => d.id === doseId);
     const med = dose && medications.find((m) => m.id === dose.medicationId);
     if (!dose || !med) return;
+    
     const ids = notifIds.current.get(dose.id);
     if (ids) {
       await cancelDoseNotifications(ids);
       notifIds.current.delete(dose.id);
     }
+    
+    // Envia a confirmação ao backend
     await confirmarDose({
       id_dispositivo: DEVICE_ID,
       nome_remedio: med.name,
       horario_programado: dose.scheduledAt,
     });
+    
+    // ✨ NOVO: Aguarda um delay seguro para garantir que o backend
+    // finalizou a escrita no banco de dados antes de recarregar
+    await new Promise(resolve => setTimeout(resolve, CONFIRMACAO_DELAY_MS));
+    
+    // Agora recarrega os dados
     await load();
   }
 
