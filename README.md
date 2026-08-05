@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/readme/logo.png" alt="MediSync" width="120">
+  <img src="./assets/readme/demo.gif" alt="Demonstração do dispensador MediSync em funcionamento" width="360">
 </p>
 
 <h1 align="center">MediSync</h1>
@@ -53,9 +53,7 @@ O **MediSync** atua como uma ponte entre o paciente e seu cuidador. Nosso ecossi
 |:---:|:---:|
 | [luisacampanhah.github.io/Hackathon-MediSync](https://luisacampanhah.github.io/Hackathon-MediSync/) | [hackathon-medi-sync.vercel.app](https://hackathon-medi-sync.vercel.app/) |
 
-<p align="center">
-  <img src="./assets/readme/demo.gif" alt="Demonstração do dispensador MediSync em funcionamento" width="360">
-</p>
+
 
 ---
 
