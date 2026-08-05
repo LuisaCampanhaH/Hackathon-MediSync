@@ -88,7 +88,10 @@ export default function AddMedicationScreen({
       }
       setToastVisible(true);
     } catch (e) {
-      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível salvar o medicamento.');
+      const msg = e instanceof Error ? e.message : 'Não foi possível salvar o medicamento.';
+      // Alert.alert não mostra nada no react-native-web.
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Erro', msg);
     } finally {
       setSaving(false);
     }
