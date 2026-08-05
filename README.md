@@ -18,7 +18,7 @@ Dispensador Inteligente de Medicamentos integrado a um ecossistema de cuidado e 
 
 <p align="center">
   <a href="https://luisacampanhah.github.io/Hackathon-MediSync/"><b>🌐 Landing Page</b></a> ·
-  <a href="https://hackathon-medi-sync.vercel.app/"><b>📱 Abrir o App</b></a>
+  <a href="https://hackathon-medi-sync-egq36gb65-medi-sync1.vercel.app/"><b>📱 Abrir o App</b></a>
 </p>
 
 <p align="center">
