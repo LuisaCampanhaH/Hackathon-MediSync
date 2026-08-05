@@ -321,8 +321,10 @@ app.post('/api/dispositivo/confirmacao', async (req, res) => {
       enviarNotificacaoPush(nomeCuidador, nomePaciente, nome_remedio, status, estoqueAtual);
     }
 
-    // Dispara alerta via WebSockets
+    // ✨ CORRIGIDO: Adiciona id_dispositivo explicitamente no payload
+    // para que o front possa filtrar corretamente
     io.emit('nova_dose_registrada', {
+      id_dispositivo: id_dispositivo,  // ← NOVO: id_dispositivo no root
       dose: resultado.rows[0],
       estoque_atual: estoqueAtual,
       telefone_paciente: telefonePaciente,
