@@ -365,27 +365,42 @@ app.get('/api/dispositivo/:id/historico', async (req, res) => {
   }
 });
 
-// 8. ROTA: DELETAR UM MEDICAMENTO DA AGENDA (DELETE)
+// 8. ROTA: DELETAR UM MEDICAMENTO DA AGENDA E SEU HISTÓRICO (DELETE)
 app.delete('/api/medicamentos/:id', async (req, res) => {
   const idMedicamento = req.params.id;
 
   try {
-    const querySQL = 'DELETE FROM horarios_medicamentos WHERE id = $1 RETURNING *;';
-    const resultado = await db.query(querySQL, [idMedicamento]);
+    // A. Busca o medicamento antes de deletar para obter o id_dispositivo e nome_remedio
+    const medicamentoRes = await db.query(
+      'SELECT id_dispositivo, nome_remedio FROM horarios_medicamentos WHERE id = $1',
+      [idMedicamento]
+    );
 
-    if (resultado.rows.length === 0) {
+    if (medicamentoRes.rows.length === 0) {
       return res.status(404).json({ erro: 'Medicamento não encontrado no banco.' });
     }
 
-    io.emit('medicamento_deletado', { id: idMedicamento });
+    const { id_dispositivo, nome_remedio } = medicamentoRes.rows[0];
+
+    // B. Deleta todos os registros deste remédio no histórico de doses
+    await db.query(
+      'DELETE FROM historico_doses WHERE id_dispositivo = $1 AND nome_remedio = $2',
+      [id_dispositivo, nome_remedio]
+    );
+
+    // C. Deleta o medicamento da agenda de horários
+    const querySQL = 'DELETE FROM horarios_medicamentos WHERE id = $1 RETURNING *;';
+    const resultado = await db.query(querySQL, [idMedicamento]);
+
+    io.emit('medicamento_deletado', { id: idMedicamento, nome_remedio, id_dispositivo });
 
     return res.status(200).json({
-      mensagem: 'Medicamento removido com sucesso! 🗑️',
+      mensagem: 'Medicamento e histórico removidos com sucesso! 🗑️',
       dadosDeletados: resultado.rows[0]
     });
 
   } catch (error) {
-    console.error('Erro ao deletar medicamento:', error);
+    console.error('Erro ao deletar medicamento e histórico:', error);
     return res.status(500).json({ erro: 'Erro interno ao deletar no banco de dados.' });
   }
 });
