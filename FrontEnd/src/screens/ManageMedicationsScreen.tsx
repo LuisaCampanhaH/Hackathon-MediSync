@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Pressable } from 'react-native';
+import { Alert, Platform, Pressable } from 'react-native';
 import { ScrollView, YStack, XStack, Text } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
 
@@ -8,6 +9,29 @@ import { radii, shadow, space } from '../theme/tokens';
 import { usePatientData, type Medication } from '../data/store';
 import { confirmDelete, notifyError } from '../platformAlert';
 import type { Navigate } from '../../App';
+
+// Alert.alert não tem UI própria no react-native-web (não mostra nada e não
+// dispara os botões), então no browser o "Excluir" parecia não fazer nada.
+// window.confirm/alert cobrem o caso web; fora dele usamos o Alert nativo normal.
+function confirmAsync(title: string, message: string): Promise<boolean> {
+  if (Platform.OS === 'web') {
+    return Promise.resolve(window.confirm(`${title}\n\n${message}`));
+  }
+  return new Promise((resolve) => {
+    Alert.alert(title, message, [
+      { text: 'Cancelar', style: 'cancel', onPress: () => resolve(false) },
+      { text: 'Excluir', style: 'destructive', onPress: () => resolve(true) },
+    ]);
+  });
+}
+
+function alertError(message: string) {
+  if (Platform.OS === 'web') {
+    window.alert(message);
+    return;
+  }
+  Alert.alert('Erro', message);
+}
 
 export default function ManageMedicationsScreen({ navigate }: { navigate: Navigate }) {
   const { colors } = useAppTheme();

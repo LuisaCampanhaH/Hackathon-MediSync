@@ -9,6 +9,7 @@ import { ThemeProvider, useAppTheme } from './src/theme/ThemeContext';
 import { space } from './src/theme/tokens';
 import { PatientDataProvider, usePatientData } from './src/data/store';
 import { setupNotifications } from './src/notifications';
+
 import ScreenTransition from './src/components/ScreenTransition';
 import DashboardScreen from './src/screens/DashboardScreen';
 import AddMedicationScreen from './src/screens/AddMedicationScreen';
@@ -17,11 +18,13 @@ import AlertScreen from './src/screens/AlertScreen';
 import ReportScreen from './src/screens/ReportScreen';
 
 export type ScreenName = 'dashboard' | 'add' | 'manage' | 'alert' | 'report';
+
 export type Navigate = (screen: ScreenName, doseId?: string, medicationId?: string) => void;
 
 function AppShell() {
   const { colors, isDark } = useAppTheme();
   const { loading, error, refresh } = usePatientData();
+
   const [screen, setScreen] = useState<ScreenName>('dashboard');
   const [alertDoseId, setAlertDoseId] = useState<string | undefined>();
   const [editMedicationId, setEditMedicationId] = useState<string | undefined>();
@@ -34,6 +37,10 @@ function AppShell() {
 
   useEffect(() => {
     setupNotifications();
+    const interval = setInterval(() => {
+      refresh();
+    }, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -192,11 +199,12 @@ function AppShell() {
               fontWeight={screen === 'report' ? '700' : '600'}
               color={screen === 'report' ? colors.primary : colors.tabInactive}
             >
-              Relatório
+              Relatórios
             </Text>
           </Pressable>
         </XStack>
       )}
+
       <StatusBar style={isDark ? 'light' : 'dark'} />
     </YStack>
   );

@@ -1,25 +1,28 @@
 /*
-  DISPENSADOR DE REMÉDIOS - Código Final integrado com o BackEnd real
+  DISPENSADOR DE REMÉDIOS - Código Final (MVP Hackathon)
 */
-#include "soc/soc.h"
-#include "soc/rtc_cntl_reg.h"
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <ESP32Servo.h>
 #include <time.h>
-#include "secrets.h" 
+
+// ================== CREDENCIAIS E CONFIGURAÇÕES ==================
+const char* WIFI_SSID = "ALEXANDRECUNHA";
+const char* WIFI_SENHA = "Alexmiriamluisa@"; // <--- SUA SENHA AQUI
+const char* SERVIDOR_BASE = "https://hackathon-medisync.onrender.com"; // <--- EX: http://192.168.0.15:3000
+const char* ID_DISPOSITIVO = "ESP32-TESTE-01"; // <--- ID REAL DO BANCO DE DADOS
 
 // ================== PINOS ==================
-const int PINO_SERVO   = 13;
-const int PINO_BUZZER  = 25;
+const int PINO_SERVO    = 13;
+const int PINO_BUZZER   = 25;
 const int PINO_LED_VERDE    = 26;
 const int PINO_LED_VERMELHO = 27;
-const int PINO_BOTAO1  = 32;
+const int PINO_BOTAO1   = 32;
 
 Servo meuServo;
 
-// ================== AJUSTAR: VALORES DE CALIBRAÇÃO (pulso em microssegundos) ==================
+// ================== VALORES DE CALIBRAÇÃO (SERVO) ==================
 const int PULSO_SAIDA = 1900; 
 const int PULSO_A     = 1550; 
 const int PULSO_B     = 2400; 
@@ -38,8 +41,8 @@ const unsigned long INTERVALO_ATUALIZACAO_AGENDA = 60000;
 
 // ================== SETUP ==================
 void setup() {
-  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); 
   Serial.begin(115200);
+  delay(1000);
   
   meuServo.attach(PINO_SERVO, 500, 2400);
   meuServo.writeMicroseconds(PULSO_SAIDA);
@@ -50,10 +53,13 @@ void setup() {
   pinMode(PINO_BOTAO1, INPUT_PULLUP);
   
   conectarWiFi();
-  configTime(-10800, 0, "pool.ntp.org"); 
+  
+  Serial.println("Sincronizando relogio...");
+  configTime(-10800, 0, "pool.ntp.org", "time.google.com", "a.st1.ntp.br"); 
+  
   buscarAgenda(); 
   
-  Serial.println("Sistema pronto!");
+  Serial.println("\nSistema pronto e rodando!");
 }
 
 // ================== LOOP PRINCIPAL ==================
@@ -79,7 +85,7 @@ void conectarWiFi() {
   }
   
   if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("\nWi-Fi conectado! IP do ESP32: " + WiFi.localIP().toString());
+    Serial.println("\nWi-Fi conectado! IP: " + WiFi.localIP().toString());
   } else {
     Serial.println("\nFalha ao conectar Wi-Fi.");
   }
@@ -87,39 +93,51 @@ void conectarWiFi() {
 
 // ================== BUSCAR AGENDA NO SERVIDOR ==================
 void buscarAgenda() {
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("Sem Wi-Fi, não foi possível buscar a agenda.");
-    return;
-  }
+  if (WiFi.status() != WL_CONNECTED) return;
   
   HTTPClient http;
   String url = String(SERVIDOR_BASE) + "/api/dispositivo/" + ID_DISPOSITIVO + "/agenda";
-  http.begin(url);
+  
+  http.begin(url); 
   
   int codigoResposta = http.GET();
   if (codigoResposta == 200) {
     String resposta = http.getString();
-    Serial.println("Agenda recebida: " + resposta);
     
     DynamicJsonDocument doc(4096);
     DeserializationError erro = deserializeJson(doc, resposta);
     
     if (!erro) {
+      // SALVA O HISTÓRICO PARA NÃO REPETIR O REMÉDIO
+      ItemAgenda agendaAntiga[20];
+      int qtdAntiga = qtdItensAgenda;
+      for(int i = 0; i < qtdAntiga; i++) {
+        agendaAntiga[i] = agenda[i];
+      }
+
       qtdItensAgenda = 0;
       JsonArray lista = doc.as<JsonArray>();
       for (JsonObject item : lista) {
         if (qtdItensAgenda >= 20) break;
+        
         agenda[qtdItensAgenda].nomeRemedio = item["nome_remedio"].as<String>();
         agenda[qtdItensAgenda].horario = item["horario"].as<String>(); 
         agenda[qtdItensAgenda].jaDispensadoHoje = false;
+        
+        // DEVOLVE A MARCAÇÃO SE JÁ TOMOU HOJE
+        for(int j = 0; j < qtdAntiga; j++) {
+          if(agendaAntiga[j].nomeRemedio == agenda[qtdItensAgenda].nomeRemedio && 
+             agendaAntiga[j].horario == agenda[qtdItensAgenda].horario) {
+             agenda[qtdItensAgenda].jaDispensadoHoje = agendaAntiga[j].jaDispensadoHoje;
+             break;
+          }
+        }
         qtdItensAgenda++;
       }
-      Serial.println("Total de horarios carregados: " + String(qtdItensAgenda));
-    } else {
-      Serial.println("Erro ao interpretar JSON da agenda.");
+      Serial.println("Agenda atualizada do BackEnd. Total de remedios: " + String(qtdItensAgenda));
     }
   } else {
-    Serial.println("Erro ao buscar agenda. Codigo: " + String(codigoResposta));
+    Serial.println("Erro ao buscar agenda. Codigo HTTP: " + String(codigoResposta));
   }
   http.end();
 }
@@ -127,7 +145,7 @@ void buscarAgenda() {
 // ================== VERIFICAR HORÁRIOS ==================
 void verificarHorarios() {
   struct tm horaAtual;
-  if (!getLocalTime(&horaAtual)) return;
+  if (!getLocalTime(&horaAtual)) return; 
   
   int horaAgora = horaAtual.tm_hour;
   int minutoAgora = horaAtual.tm_min;
@@ -150,17 +168,24 @@ void verificarHorarios() {
   }
 }
 
-// ================== PEGAR PULSO ==================
+// ================== PEGAR PULSO (POR NOME EXATO) ==================
 int pulsoDoRemedio(String nome) {
-  if (nome == "A") return PULSO_A;
-  if (nome == "B") return PULSO_B;
+  nome.trim(); // Remove espaços vazios
+  
+  // SUBSTITUA AQUI PELOS NOMES QUE VOCÊ CADASTRA NO APP
+  if (nome.equalsIgnoreCase("Remedio A") || nome.equalsIgnoreCase("A")) {
+    return PULSO_A;
+  }
+  else if (nome.equalsIgnoreCase("Remedio B") || nome.equalsIgnoreCase("B")) {
+    return PULSO_B;
+  }
+  
+  Serial.println("ALERTA: O remedio '" + nome + "' nao esta mapeado no motor!");
   return PULSO_SAIDA; 
 }
 
-// ================== DISPENSAR ==================
-void dispensarRemedio(String nomeRemedio) {
-  Serial.println("Dispensando remedio: " + nomeRemedio);
-  
+// ================== APITO + LED VERMELHO (ALERTA) ==================
+void apitarAlerta() {
   for (int i = 0; i < 5; i++) {
     digitalWrite(PINO_BUZZER, HIGH);
     digitalWrite(PINO_LED_VERMELHO, HIGH);
@@ -169,45 +194,82 @@ void dispensarRemedio(String nomeRemedio) {
     digitalWrite(PINO_LED_VERMELHO, LOW);
     delay(200);
   }
-  
+}
+
+// ================== PISCA VERDE 3X (CONFIRMAÇÃO DO BOTÃO) ==================
+void piscarConfirmacao() {
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(PINO_LED_VERDE, HIGH);
+    delay(150);
+    digitalWrite(PINO_LED_VERDE, LOW);
+    delay(150);
+  }
+}
+
+// ================== DISPENSAR ==================
+void dispensarRemedio(String nomeRemedio) {
+  Serial.println("\n>>> HORA DO REMEDIO: " + nomeRemedio + " <<<");
+
+  // 1) Avisa com apito + LED vermelho antes de mexer no servo
+  apitarAlerta();
+  delay(500);
+
+  // 2) Apito para (fica em silêncio) enquanto o servo trabalha
+  Serial.println("Abrindo gaveta...");
   meuServo.writeMicroseconds(pulsoDoRemedio(nomeRemedio));
-  delay(800);
+  delay(2500); // 2,5 segundos para o remédio cair
+
+  Serial.println("Fechando gaveta...");
   meuServo.writeMicroseconds(PULSO_SAIDA);
-  delay(800);
-  
-  digitalWrite(PINO_LED_VERDE, HIGH);
-  
+  delay(1000);
+
+  // 3) Servo desligou (voltou pra posição de repouso) -> apito volta a avisar
+  Serial.println("Servo desligado. Avisando novamente...");
+  apitarAlerta();
+
+  // 4) Espera o paciente apertar o botão, com o LED verde piscando
+  Serial.println("Aguardando paciente apertar o botão...");
+
   bool confirmado = false;
   unsigned long inicioEspera = millis();
-  
+  unsigned long ultimoPisca = millis();
+  bool ledAceso = false;
+  const unsigned long INTERVALO_PISCA_MS = 400;
+
   while (millis() - inicioEspera < 300000) {
     if (digitalRead(PINO_BOTAO1) == LOW) {
       confirmado = true;
       break;
     }
-    delay(100);
+
+    if (millis() - ultimoPisca >= INTERVALO_PISCA_MS) {
+      ledAceso = !ledAceso;
+      digitalWrite(PINO_LED_VERDE, ledAceso ? HIGH : LOW);
+      ultimoPisca = millis();
+    }
+
+    delay(20);
   }
-  
+
   digitalWrite(PINO_LED_VERDE, LOW);
-  
+
   if (confirmado) {
-    Serial.println("Remedio " + nomeRemedio + " confirmado.");
+    Serial.println("-> Botao apertado! Remedio confirmado.");
+    piscarConfirmacao();
     enviarConfirmacao(nomeRemedio);
   } else {
-    Serial.println("Remedio " + nomeRemedio + " NAO confirmado a tempo.");
+    Serial.println("-> TEMPO ESGOTADO. Remedio NAO confirmado.");
   }
 }
 
 // ================== ENVIAR CONFIRMAÇÃO ==================
 void enviarConfirmacao(String nomeRemedio) {
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("Sem Wi-Fi, não foi possível enviar confirmação.");
-    return;
-  }
+  if (WiFi.status() != WL_CONNECTED) return;
   
   HTTPClient http;
   String url = String(SERVIDOR_BASE) + "/api/dispositivo/confirmacao";
-  http.begin(url);
+  
+  http.begin(url); 
   http.addHeader("Content-Type", "application/json");
   
   struct tm horaAtual;
@@ -226,7 +288,7 @@ void enviarConfirmacao(String nomeRemedio) {
   int codigoResposta = http.POST(corpoJson);
   
   if (codigoResposta > 0) {
-    Serial.println("Confirmacao enviada! Resposta: " + String(codigoResposta));
+    Serial.println("Confirmacao enviada ao servidor! Resposta HTTP: " + String(codigoResposta));
   } else {
     Serial.println("Erro ao enviar confirmacao: " + http.errorToString(codigoResposta));
   }
