@@ -277,7 +277,7 @@ export default function DashboardScreen({ navigate }: { navigate: Navigate }) {
                   {iconFor(dose, isNext)}
                   <YStack flex={1}>
                     <XStack alignItems="center" justifyContent="space-between">
-                      <XStack gap={space.sm} alignItems="center">
+                      <XStack gap={space.sm} alignItems="center" flex={1} minWidth={0}>
                         <Text
                           fontSize={14.5}
                           fontWeight="700"
@@ -299,7 +299,14 @@ export default function DashboardScreen({ navigate }: { navigate: Navigate }) {
                             {dayLabel}
                           </Text>
                         )}
-                        <Text fontSize={16.5} fontWeight="700" color={colors.textPrimary}>
+                        <Text
+                          fontSize={16.5}
+                          fontWeight="700"
+                          color={colors.textPrimary}
+                          flexShrink={1}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
                           {med?.name} · {med?.dosage}
                         </Text>
                       </XStack>

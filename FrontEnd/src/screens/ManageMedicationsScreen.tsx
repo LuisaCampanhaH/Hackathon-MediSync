@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Alert, Pressable } from 'react-native';
+import { Pressable } from 'react-native';
 import { ScrollView, YStack, XStack, Text } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
 
 import { useAppTheme } from '../theme/ThemeContext';
 import { radii, shadow, space } from '../theme/tokens';
 import { usePatientData, type Medication } from '../data/store';
+import { confirmDelete, notifyError } from '../platformAlert';
 import type { Navigate } from '../../App';
 
 export default function ManageMedicationsScreen({ navigate }: { navigate: Navigate }) {
@@ -14,23 +15,16 @@ export default function ManageMedicationsScreen({ navigate }: { navigate: Naviga
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function handleDelete(med: Medication) {
-    Alert.alert('Excluir medicamento', `Remover ${med.name} da lista de medicamentos?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Excluir',
-        style: 'destructive',
-        onPress: async () => {
-          setDeletingId(med.id);
-          try {
-            await deleteMedication(med.id);
-          } catch (e) {
-            Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível excluir.');
-          } finally {
-            setDeletingId(null);
-          }
-        },
-      },
-    ]);
+    confirmDelete('Excluir medicamento', `Remover ${med.name} da lista de medicamentos?`, async () => {
+      setDeletingId(med.id);
+      try {
+        await deleteMedication(med.id);
+      } catch (e) {
+        notifyError(e instanceof Error ? e.message : 'Não foi possível excluir.');
+      } finally {
+        setDeletingId(null);
+      }
+    });
   }
 
   return (

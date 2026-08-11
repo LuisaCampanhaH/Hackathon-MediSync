@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Platform, Pressable, TextInput } from 'react-native';
+import { Animated, Platform, Pressable, TextInput } from 'react-native';
 import { ScrollView, YStack, XStack, Text } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -7,6 +7,7 @@ import DateTimePicker, { type DateTimePickerEvent } from '@react-native-communit
 import { useAppTheme } from '../theme/ThemeContext';
 import { radii, shadow, space } from '../theme/tokens';
 import { getMedication, usePatientData } from '../data/store';
+import { notifyError } from '../platformAlert';
 import type { Navigate, ScreenName } from '../../App';
 
 const FREQUENCIES = ['1x ao dia', '2x ao dia', '3x ao dia', 'A cada 8h', 'Outro'];
@@ -88,7 +89,7 @@ export default function AddMedicationScreen({
       }
       setToastVisible(true);
     } catch (e) {
-      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível salvar o medicamento.');
+      notifyError(e instanceof Error ? e.message : 'Não foi possível salvar o medicamento.');
     } finally {
       setSaving(false);
     }
