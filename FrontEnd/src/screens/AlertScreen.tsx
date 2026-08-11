@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Linking, Pressable } from 'react-native';
-import { Alert, Linking, Platform, Pressable } from 'react-native';
 import { YStack, XStack, Text } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
 
