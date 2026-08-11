@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Linking, Pressable } from 'react-native';
 import { Alert, Linking, Platform, Pressable } from 'react-native';
 import { YStack, XStack, Text } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
@@ -6,6 +7,7 @@ import { Feather } from '@expo/vector-icons';
 import { useAppTheme } from '../theme/ThemeContext';
 import { radii, space } from '../theme/tokens';
 import { getMedication, usePatientData } from '../data/store';
+import { notifyError } from '../platformAlert';
 import type { Navigate } from '../../App';
 
 function minutesLate(scheduledTime: string) {
@@ -40,10 +42,7 @@ export default function AlertScreen({ navigate, doseId }: { navigate: Navigate; 
       
       navigate('dashboard');
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Não foi possível confirmar a dose.';
-      // Alert.alert não mostra nada no react-native-web.
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Erro', msg);
+      notifyError(e instanceof Error ? e.message : 'Não foi possível confirmar a dose.');
     } finally {
       setConfirming(false);
     }

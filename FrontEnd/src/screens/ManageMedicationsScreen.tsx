@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Pressable } from 'react-native';
 import { Alert, Platform, Pressable } from 'react-native';
 import { ScrollView, YStack, XStack, Text } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
@@ -6,6 +7,7 @@ import { Feather } from '@expo/vector-icons';
 import { useAppTheme } from '../theme/ThemeContext';
 import { radii, shadow, space } from '../theme/tokens';
 import { usePatientData, type Medication } from '../data/store';
+import { confirmDelete, notifyError } from '../platformAlert';
 import type { Navigate } from '../../App';
 
 // Alert.alert não tem UI própria no react-native-web (não mostra nada e não
@@ -36,18 +38,17 @@ export default function ManageMedicationsScreen({ navigate }: { navigate: Naviga
   const { patient, deleteMedication } = usePatientData();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  async function handleDelete(med: Medication) {
-    const confirmed = await confirmAsync('Excluir medicamento', `Remover ${med.name} da lista de medicamentos?`);
-    if (!confirmed) return;
-
-    setDeletingId(med.id);
-    try {
-      await deleteMedication(med.id);
-    } catch (e) {
-      alertError(e instanceof Error ? e.message : 'Não foi possível excluir.');
-    } finally {
-      setDeletingId(null);
-    }
+  function handleDelete(med: Medication) {
+    confirmDelete('Excluir medicamento', `Remover ${med.name} da lista de medicamentos?`, async () => {
+      setDeletingId(med.id);
+      try {
+        await deleteMedication(med.id);
+      } catch (e) {
+        notifyError(e instanceof Error ? e.message : 'Não foi possível excluir.');
+      } finally {
+        setDeletingId(null);
+      }
+    });
   }
 
   return (
