@@ -37,10 +37,6 @@ function AppShell() {
 
   useEffect(() => {
     setupNotifications();
-    const interval = setInterval(() => {
-      refresh();
-    }, 3000);
-    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
