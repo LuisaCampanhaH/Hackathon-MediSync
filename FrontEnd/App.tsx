@@ -11,6 +11,7 @@ import { PatientDataProvider, usePatientData } from './src/data/store';
 import { setupNotifications } from './src/notifications';
 
 import ScreenTransition from './src/components/ScreenTransition';
+import WebNotificationModal from './src/components/WebNotificationModal';
 import DashboardScreen from './src/screens/DashboardScreen';
 import AddMedicationScreen from './src/screens/AddMedicationScreen';
 import ManageMedicationsScreen from './src/screens/ManageMedicationsScreen';
@@ -23,7 +24,7 @@ export type Navigate = (screen: ScreenName, doseId?: string, medicationId?: stri
 
 function AppShell() {
   const { colors, isDark } = useAppTheme();
-  const { loading, error, refresh } = usePatientData();
+  const { loading, error, refresh, webNotification, dismissWebNotification } = usePatientData();
 
   const [screen, setScreen] = useState<ScreenName>('dashboard');
   const [alertDoseId, setAlertDoseId] = useState<string | undefined>();
@@ -202,6 +203,7 @@ function AppShell() {
       )}
 
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      <WebNotificationModal notification={webNotification} onDismiss={dismissWebNotification} />
     </YStack>
   );
 }

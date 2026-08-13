@@ -5,6 +5,7 @@
 // continuam calculadas no cliente.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Platform } from 'react-native';
 import { io } from 'socket.io-client';
 import {
   API_URL,
@@ -319,11 +320,19 @@ function computeAdherence(medications: Medication[], historico: HistoricoDose[])
   };
 }
 
+export interface WebNotification {
+  title: string;
+  message: string;
+  status?: string;
+}
+
 interface StoreValue {
   patient: Patient;
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  webNotification: WebNotification | null;
+  dismissWebNotification: () => void;
   addMedication: (input: { name: string; dosage: string; stock: number; times: string[] }) => Promise<void>;
   updateMedication: (
     medicationId: string,
@@ -349,6 +358,7 @@ export function PatientDataProvider({ children }: { children: React.ReactNode })
   const [error, setError] = useState<string | null>(null);
   const [patientName, setPatientName] = useState(FALLBACK_PATIENT_NAME);
   const [patientPhone, setPatientPhone] = useState<string | null>(null);
+  const [webNotification, setWebNotification] = useState<WebNotification | null>(null);
   const notifIds = useRef(new Map<string, DoseNotificationIds>());
 
   const load = useCallback(async () => {
@@ -434,7 +444,14 @@ export function PatientDataProvider({ children }: { children: React.ReactNode })
             : payload.dose?.status === 'Nao Tomado'
               ? 'MediSync — Dose não tomada'
               : 'MediSync';
-        if (payload.mensagem) notifyNow(title, payload.mensagem).catch(() => {});
+        if (payload.mensagem) {
+          notifyNow(title, payload.mensagem).catch(() => {});
+          // notifyNow() é um no-op na web (react-native-web não tem push
+          // notification nativa) — mostra num modal em vez de notificação.
+          if (Platform.OS === 'web') {
+            setWebNotification({ title, message: payload.mensagem, status: payload.dose?.status });
+          }
+        }
       }
     );
 
@@ -601,6 +618,8 @@ export function PatientDataProvider({ children }: { children: React.ReactNode })
     loading,
     error,
     refresh: load,
+    webNotification,
+    dismissWebNotification: () => setWebNotification(null),
     addMedication,
     updateMedication,
     deleteMedication,
