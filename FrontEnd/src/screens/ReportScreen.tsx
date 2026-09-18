@@ -1,9 +1,10 @@
 import { ScrollView, YStack, XStack, Text } from 'tamagui';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 
 import { useAppTheme } from '../theme/ThemeContext';
-import { radii, shadow, space } from '../theme/tokens';
+import { brandGradients, radii, shadow, space } from '../theme/tokens';
 import { usePatientData } from '../data/store';
 import type { Navigate } from '../../App';
 
@@ -48,9 +49,16 @@ export default function ReportScreen(_props: { navigate: Navigate }) {
       </YStack>
 
       <YStack style={cardStyle} alignItems="center">
-        <YStack width={DONUT_SIZE} height={DONUT_SIZE} alignItems="center" justifyContent="center">
+        <YStack width={DONUT_SIZE} height={DONUT_SIZE} alignItems="center" justifyContent="center" {...shadow.donut}>
           <YStack style={{ transform: [{ rotate: '-90deg' }] }}>
             <Svg width={DONUT_SIZE} height={DONUT_SIZE} viewBox={`0 0 ${DONUT_SIZE} ${DONUT_SIZE}`}>
+              <Defs>
+                <SvgLinearGradient id="donutGrad" x1="0" y1="0" x2="1" y2="1">
+                  <Stop offset="0" stopColor={brandGradients.donut[0]} />
+                  <Stop offset="0.5" stopColor={brandGradients.donut[1]} />
+                  <Stop offset="1" stopColor={brandGradients.donut[2]} />
+                </SvgLinearGradient>
+              </Defs>
               <Circle
                 cx={DONUT_SIZE / 2}
                 cy={DONUT_SIZE / 2}
@@ -64,7 +72,7 @@ export default function ReportScreen(_props: { navigate: Navigate }) {
                 cy={DONUT_SIZE / 2}
                 r={DONUT_R}
                 fill="none"
-                stroke={colors.success}
+                stroke="url(#donutGrad)"
                 strokeWidth={DONUT_STROKE}
                 strokeLinecap="round"
                 strokeDasharray={`${dashLength.toFixed(1)} ${CIRCUMFERENCE.toFixed(1)}`}
@@ -144,15 +152,24 @@ export default function ReportScreen(_props: { navigate: Navigate }) {
                       borderTopRightRadius={6}
                     />
                   )}
-                  <YStack
-                    width="100%"
-                    height={takenHeight}
-                    backgroundColor={colors.success}
-                    borderTopLeftRadius={missedHeight > 0 ? 0 : 6}
-                    borderTopRightRadius={missedHeight > 0 ? 0 : 6}
-                    borderBottomLeftRadius={6}
-                    borderBottomRightRadius={6}
-                  />
+                  {missedHeight === 0 && takenHeight > 0 ? (
+                    <LinearGradient
+                      colors={brandGradients.bar}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 0, y: 1 }}
+                      style={{ width: '100%', height: takenHeight, borderRadius: 6 }}
+                    />
+                  ) : (
+                    <YStack
+                      width="100%"
+                      height={takenHeight}
+                      backgroundColor={colors.success}
+                      borderTopLeftRadius={missedHeight > 0 ? 0 : 6}
+                      borderTopRightRadius={missedHeight > 0 ? 0 : 6}
+                      borderBottomLeftRadius={6}
+                      borderBottomRightRadius={6}
+                    />
+                  )}
                 </YStack>
               </YStack>
             );
@@ -190,27 +207,25 @@ export default function ReportScreen(_props: { navigate: Navigate }) {
 
       <XStack
         style={cardStyle}
-        backgroundColor={colors.goldTint}
+        backgroundColor={colors.accentTint}
         alignItems="center"
         gap={space.md}
       >
-        <YStack
-          width={52}
-          height={52}
-          borderRadius={26}
-          backgroundColor={colors.gold}
-          alignItems="center"
-          justifyContent="center"
+        <LinearGradient
+          colors={colors.gradAction}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' }}
         >
-          <Text fontSize={19} fontWeight="800" color={colors.goldText}>
+          <Text fontSize={19} fontWeight="800" color={colors.onGradAction}>
             {streakDays}
           </Text>
-        </YStack>
+        </LinearGradient>
         <YStack flex={1}>
-          <Text fontSize={19} fontWeight="700" color={colors.goldText}>
+          <Text fontSize={19} fontWeight="700" color={colors.accentText}>
             {streakDays} dias seguidos!
           </Text>
-          <Text fontSize={13} color={colors.goldText} opacity={0.85} marginTop={2}>
+          <Text fontSize={13} color={colors.accentText} opacity={0.85} marginTop={2}>
             Continue assim, parabéns pela dedicação.
           </Text>
         </YStack>

@@ -4,8 +4,10 @@ import { ScrollView, YStack, XStack, Text } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
+import { LinearGradient } from 'expo-linear-gradient';
+
 import { useAppTheme } from '../theme/ThemeContext';
-import { radii, shadow, space } from '../theme/tokens';
+import { neutralGradient, radii, shadow, space } from '../theme/tokens';
 import { getMedication, usePatientData } from '../data/store';
 import { notifyError } from '../platformAlert';
 import type { Navigate, ScreenName } from '../../App';
@@ -113,18 +115,15 @@ export default function AddMedicationScreen({
           alignItems="center"
           gap={14}
         >
-          <Pressable
-            onPress={() => navigate(backTarget)}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: radii.squircle,
-              backgroundColor: colors.surfaceAlt,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Feather name="arrow-left" size={18} color={colors.textPrimary} />
+          <Pressable onPress={() => navigate(backTarget)}>
+            <LinearGradient
+              colors={neutralGradient(colors)}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{ width: 44, height: 44, borderRadius: radii.squircle, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Feather name="arrow-left" size={18} color={colors.textPrimary} />
+            </LinearGradient>
           </Pressable>
           <YStack>
             <Text fontSize={19} fontWeight="800" color={colors.textPrimary}>
@@ -172,20 +171,24 @@ export default function AddMedicationScreen({
                 const selected = f === freq;
                 return (
                   <Pressable key={f} onPress={() => setFreq(f)}>
-                    <YStack
-                      borderRadius={radii.sm}
-                      paddingHorizontal={14}
-                      paddingVertical={10}
-                      backgroundColor={selected ? colors.primary : colors.surfaceAlt}
-                    >
-                      <Text
-                        fontSize={13.5}
-                        fontWeight={selected ? '700' : '600'}
-                        color={selected ? colors.onPrimary : colors.textPrimary}
+                    {selected ? (
+                      <LinearGradient
+                        colors={colors.gradAction}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={{ borderRadius: radii.sm, paddingHorizontal: 14, paddingVertical: 10 }}
                       >
-                        {f}
-                      </Text>
-                    </YStack>
+                        <Text fontSize={13.5} fontWeight="700" color={colors.onGradAction}>
+                          {f}
+                        </Text>
+                      </LinearGradient>
+                    ) : (
+                      <YStack borderRadius={radii.sm} paddingHorizontal={14} paddingVertical={10} backgroundColor={colors.surfaceAlt}>
+                        <Text fontSize={13.5} fontWeight="600" color={colors.textPrimary}>
+                          {f}
+                        </Text>
+                      </YStack>
+                    )}
                   </Pressable>
                 );
               })}
@@ -247,21 +250,27 @@ export default function AddMedicationScreen({
                   setShowPicker(true);
                 }}
               >
-                <XStack
-                  alignItems="center"
-                  justifyContent="center"
-                  gap={space.sm}
-                  borderRadius={radii.md}
-                  borderWidth={1.5}
-                  borderColor={colors.primary}
-                  borderStyle="dashed"
-                  paddingVertical={14}
+                <LinearGradient
+                  colors={[colors.primaryTint, 'transparent']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: space.sm,
+                    borderRadius: radii.md,
+                    borderWidth: 1.5,
+                    borderColor: colors.primary,
+                    borderStyle: 'dashed',
+                    paddingVertical: 14,
+                  }}
                 >
                   <Feather name="plus" size={15} color={colors.primary} />
                   <Text color={colors.primary} fontWeight="700" fontSize={14}>
                     Adicionar horário
                   </Text>
-                </XStack>
+                </LinearGradient>
               </Pressable>
             )}
 
@@ -357,18 +366,15 @@ export default function AddMedicationScreen({
               paddingVertical={10}
               alignSelf="flex-start"
             >
-              <Pressable
-                onPress={() => setStock((s) => Math.max(0, s - 1))}
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 13,
-                  backgroundColor: colors.surface,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Feather name="minus" size={17} color={colors.textPrimary} />
+              <Pressable onPress={() => setStock((s) => Math.max(0, s - 1))}>
+                <LinearGradient
+                  colors={neutralGradient(colors)}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{ width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Feather name="minus" size={17} color={colors.textPrimary} />
+                </LinearGradient>
               </Pressable>
               <Text
                 fontSize={24}
@@ -379,18 +385,15 @@ export default function AddMedicationScreen({
               >
                 {stock}
               </Text>
-              <Pressable
-                onPress={() => setStock((s) => s + 1)}
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 13,
-                  backgroundColor: colors.surface,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Feather name="plus" size={17} color={colors.textPrimary} />
+              <Pressable onPress={() => setStock((s) => s + 1)}>
+                <LinearGradient
+                  colors={neutralGradient(colors)}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{ width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Feather name="plus" size={17} color={colors.textPrimary} />
+                </LinearGradient>
               </Pressable>
             </XStack>
             <Text fontSize={12.5} color={colors.textMuted}>
@@ -399,20 +402,17 @@ export default function AddMedicationScreen({
           </YStack>
 
           <YStack gap={space.sm}>
-            <Pressable onPress={handleSave} disabled={!canSave}>
-              <YStack
-                alignItems="center"
-                justifyContent="center"
-                minHeight={58}
-                borderRadius={radii.md}
-                backgroundColor={colors.primary}
-                opacity={canSave ? 1 : 0.5}
-                {...shadow.hero}
+            <Pressable onPress={handleSave} disabled={!canSave} style={{ opacity: canSave ? 1 : 0.5, ...shadow.hero }}>
+              <LinearGradient
+                colors={colors.gradAction}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{ alignItems: 'center', justifyContent: 'center', minHeight: 58, borderRadius: radii.md }}
               >
-                <Text color={colors.onPrimary} fontSize={17} fontWeight="700">
+                <Text color={colors.onGradAction} fontSize={17} fontWeight="700">
                   {saving ? 'Salvando...' : medicationId ? 'Salvar Alterações' : 'Salvar Configuração'}
                 </Text>
-              </YStack>
+              </LinearGradient>
             </Pressable>
             <Text fontSize={12.5} color={colors.textMuted} textAlign="center">
               A configuração será enviada para a caixinha via Wi-Fi.

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { TamaguiProvider, YStack, XStack, Text } from 'tamagui';
 import { ActivityIndicator, Pressable } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 
 import tamaguiConfig from './tamagui.config';
@@ -153,15 +154,8 @@ function AppShell() {
             <Pressable
               onPress={() => setScreen('add')}
               style={{
-                width: 52,
-                height: 52,
-                borderRadius: 18,
                 marginTop: -30,
-                backgroundColor: colors.primary,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderWidth: 4,
-                borderColor: colors.surface,
+                borderRadius: 18,
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 6 },
                 shadowOpacity: 0.22,
@@ -169,7 +163,22 @@ function AppShell() {
                 elevation: 6,
               }}
             >
-              <Feather name="plus" size={23} color={colors.onPrimary} />
+              <LinearGradient
+                colors={colors.gradAction}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 18,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 4,
+                  borderColor: colors.border,
+                }}
+              >
+                <Feather name="plus" size={23} color="#FFFFFF" />
+              </LinearGradient>
             </Pressable>
             <Text fontSize={11} fontWeight="700" color={colors.textSecondary} marginTop={2}>
               Adicionar

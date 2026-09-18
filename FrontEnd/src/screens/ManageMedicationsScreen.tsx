@@ -3,8 +3,10 @@ import { Pressable } from 'react-native';
 import { ScrollView, YStack, XStack, Text } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
 
+import { LinearGradient } from 'expo-linear-gradient';
+
 import { useAppTheme } from '../theme/ThemeContext';
-import { radii, shadow, space } from '../theme/tokens';
+import { neutralGradient, radii, shadow, space } from '../theme/tokens';
 import { usePatientData, type Medication } from '../data/store';
 import { confirmDelete, notifyError } from '../platformAlert';
 import type { Navigate } from '../../App';
@@ -36,18 +38,15 @@ export default function ManageMedicationsScreen({ navigate }: { navigate: Naviga
           alignItems="center"
           gap={14}
         >
-          <Pressable
-            onPress={() => navigate('dashboard')}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: radii.squircle,
-              backgroundColor: colors.surfaceAlt,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Feather name="arrow-left" size={18} color={colors.textPrimary} />
+          <Pressable onPress={() => navigate('dashboard')}>
+            <LinearGradient
+              colors={neutralGradient(colors)}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{ width: 44, height: 44, borderRadius: radii.squircle, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Feather name="arrow-left" size={18} color={colors.textPrimary} />
+            </LinearGradient>
           </Pressable>
           <YStack>
             <Text fontSize={19} fontWeight="800" color={colors.textPrimary}>
