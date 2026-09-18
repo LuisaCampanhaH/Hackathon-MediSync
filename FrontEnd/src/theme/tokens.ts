@@ -144,6 +144,14 @@ export const shadow = {
     shadowRadius: 8,
     elevation: 6,
   },
+  // 0 14px 28px rgba(190,40,30,.28) do card de atraso
+  alert: {
+    shadowColor: 'rgba(190,40,30,0.28)',
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 1,
+    shadowRadius: 28,
+    elevation: 10,
+  },
 } as const;
 
 // Degradê neutro pra botões secundários/neutros (voltar, toggle de tema,

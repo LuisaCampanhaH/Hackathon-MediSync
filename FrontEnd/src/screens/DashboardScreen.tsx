@@ -17,11 +17,6 @@ function medLabel(med?: Medication) {
   return med ? `${med.name} ${med.dosage}` : '';
 }
 
-function whenLabel(dose: DoseLogEntry) {
-  const bucket = dayBucketFor(dose.scheduledAt);
-  return `${dayWord(bucket, dose.scheduledAt)} às ${dose.scheduledTime}`;
-}
-
 export default function DashboardScreen({ navigate }: { navigate: Navigate }) {
   const { colors, isDark, toggleTheme } = useAppTheme();
   const { patient, error } = usePatientData();
@@ -47,7 +42,8 @@ export default function DashboardScreen({ navigate }: { navigate: Navigate }) {
   const isOffline = !!error;
   const isUrgent = !isOffline && !!primaryLate;
   const remainingMs = nextDose ? new Date(nextDose.scheduledAt).getTime() - now : Infinity;
-  const isSoon = !isOffline && !isUrgent && !!nextDose && remainingMs <= SOON_THRESHOLD_MS;
+  const isSoon = !isOffline && !!nextDose && remainingMs <= SOON_THRESHOLD_MS;
+  const isScheduled = !isOffline && !!nextDose && !isSoon;
 
   const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
   const cmm = Math.floor(totalSeconds / 60);
@@ -183,116 +179,115 @@ export default function DashboardScreen({ navigate }: { navigate: Navigate }) {
   const tomorrowDoses = patient.doseLog.filter((d) => dayBucketFor(d.scheduledAt) === 'tomorrow');
   const todayTakenCount = todayDoses.filter((d) => d.status === 'taken').length;
 
-  function renderHero() {
-    if (isOffline) {
-      return (
-        <YStack
-          marginHorizontal={space.lg}
-          marginBottom={space.section}
-          borderRadius={radii.lg}
-          padding={space.cardPad}
-          backgroundColor={colors.surfaceAlt}
-        >
-          <XStack alignItems="center" gap={space.sm}>
-            <Feather name="wifi-off" size={22} color={colors.textSecondary} />
-            <Text fontSize={17} fontWeight="700" color={colors.textPrimary}>
-              Agenda indisponível
+  function renderOfflineCard() {
+    return (
+      <YStack
+        marginHorizontal={space.lg}
+        marginBottom={space.section}
+        borderRadius={radii.lg}
+        padding={space.cardPad}
+        backgroundColor={colors.surfaceAlt}
+      >
+        <XStack alignItems="center" gap={space.sm}>
+          <Feather name="wifi-off" size={22} color={colors.textSecondary} />
+          <Text fontSize={17} fontWeight="700" color={colors.textPrimary}>
+            Agenda indisponível
+          </Text>
+        </XStack>
+        <Text fontSize={13.5} color={colors.textSecondary} marginTop={space.xs}>
+          Sem conexão com o servidor no momento. Verifique sua internet e tente novamente.
+        </Text>
+      </YStack>
+    );
+  }
+
+  function renderLateCard() {
+    if (!primaryLate) return null;
+    return (
+      <LinearGradient
+        colors={colors.gradAlert}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          marginHorizontal: space.lg,
+          marginBottom: 14,
+          borderRadius: radii.lg,
+          padding: space.cardPad,
+          ...shadow.alert,
+        }}
+      >
+        <Text fontSize={12} fontWeight="700" letterSpacing={1} color={colors.onWarn} opacity={0.85} textTransform="uppercase">
+          REQUER ATENÇÃO AGORA
+        </Text>
+        <Text fontSize={25} fontWeight="800" color={colors.onWarn} marginTop={4}>
+          {medLabel(primaryLateMed)}
+        </Text>
+        <Text fontSize={14.5} color={colors.onWarn} opacity={0.9} marginTop={4}>
+          Atrasado {formatLate(minutesLate(primaryLate.scheduledTime))}
+          {lateDoses.length > 1 ? ` · +${lateDoses.length - 1} outras doses atrasadas` : ''}
+        </Text>
+        <Pressable onPress={() => navigate('alert', primaryLate.id)} style={{ marginTop: space.md }}>
+          <YStack backgroundColor={colors.onWarn} borderRadius={14} paddingVertical={14} alignItems="center">
+            <Text color={colors.alertPrimaryBg} fontSize={16} fontWeight="700">
+              Resolver agora
             </Text>
-          </XStack>
-          <Text fontSize={13.5} color={colors.textSecondary} marginTop={space.xs}>
-            Sem conexão com o servidor no momento. Verifique sua internet e tente novamente.
-          </Text>
-        </YStack>
-      );
-    }
+          </YStack>
+        </Pressable>
+      </LinearGradient>
+    );
+  }
 
-    if (isUrgent && primaryLate) {
-      return (
-        <LinearGradient
-          colors={colors.gradAlert}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            marginHorizontal: space.lg,
-            marginBottom: space.section,
-            borderRadius: radii.lg,
-            padding: space.cardPad,
-            ...shadow.hero,
-          }}
-        >
-          <Text fontSize={12} fontWeight="700" letterSpacing={1} color={colors.onWarn} opacity={0.9} textTransform="uppercase">
-            REQUER ATENÇÃO AGORA
-          </Text>
-          <Text fontSize={25} fontWeight="800" color={colors.onWarn} marginTop={4}>
-            {medLabel(primaryLateMed)}
-          </Text>
-          <Text fontSize={14.5} color={colors.onWarn} opacity={0.9} marginTop={4}>
-            Atrasado {formatLate(minutesLate(primaryLate.scheduledTime))}
-            {lateDoses.length > 1 ? ` · +${lateDoses.length - 1} outras doses atrasadas` : ''}
-          </Text>
-          <Pressable onPress={() => navigate('alert', primaryLate.id)} style={{ marginTop: space.md }}>
-            <YStack backgroundColor={colors.onWarn} borderRadius={14} paddingVertical={14} alignItems="center">
-              <Text color={colors.alertPrimaryBg} fontSize={16} fontWeight="700">
-                Resolver agora
-              </Text>
-            </YStack>
-          </Pressable>
-          {nextDose && nextMed && (
-            <>
-              <YStack height={1} backgroundColor="rgba(255,255,255,0.3)" marginVertical={space.md} />
-              <Text fontSize={13} color={colors.onWarn} opacity={0.9}>
-                Próxima dose: {medLabel(nextMed)}, {whenLabel(nextDose)}
-              </Text>
-            </>
-          )}
-        </LinearGradient>
-      );
-    }
-
-    if (nextDose && nextMed) {
-      const bucket = dayBucketFor(nextDose.scheduledAt);
-      return (
-        <LinearGradient
-          colors={colors.gradHero}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            marginHorizontal: space.lg,
-            marginBottom: space.section,
-            borderRadius: radii.lg,
-            padding: space.cardPad,
-            ...shadow.hero,
-          }}
-        >
-          <Text fontSize={12} fontWeight="700" letterSpacing={1} color={colors.onPrimary} opacity={0.85} textTransform="uppercase">
-            PRÓXIMA DOSE
-          </Text>
-          <Text fontSize={25} fontWeight="800" color={colors.onPrimary} marginTop={4}>
-            {medLabel(nextMed)}
-          </Text>
-          {isSoon ? (
+  function renderNextCard() {
+    if (!nextDose || !nextMed) return null;
+    const bucket = dayBucketFor(nextDose.scheduledAt);
+    return (
+      <LinearGradient
+        colors={colors.gradHero}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          marginHorizontal: space.lg,
+          marginBottom: space.section,
+          borderRadius: radii.lg,
+          padding: space.cardPad,
+          ...shadow.hero,
+        }}
+      >
+        <Text fontSize={12} fontWeight="700" letterSpacing={1} color={colors.onPrimary} opacity={0.85} textTransform="uppercase">
+          PRÓXIMA DOSE
+        </Text>
+        <Text fontSize={25} fontWeight="800" color={colors.onPrimary} marginTop={4}>
+          {medLabel(nextMed)}
+        </Text>
+        {isSoon ? (
+          <>
+            <Text fontSize={14.5} color={colors.onPrimary} opacity={0.85} marginTop={4}>
+              às {nextDose.scheduledTime}
+            </Text>
             <XStack alignItems="flex-end" gap={space.sm} marginTop={space.md}>
-              <Text fontSize={38} fontWeight="800" color={colors.onPrimary} fontVariant={['tabular-nums']}>
+              <Text fontSize={46} fontWeight="800" color={colors.onPrimary} fontVariant={['tabular-nums']}>
                 {countdownLabel}
               </Text>
               <Text fontSize={14} fontWeight="600" color={colors.onPrimary} opacity={0.85} paddingBottom={7}>
                 até a dose
               </Text>
             </XStack>
-          ) : (
-            <XStack alignItems="flex-end" gap={space.sm} marginTop={space.md}>
-              <Text fontSize={40} fontWeight="800" color={colors.onPrimary}>
-                {nextDose.scheduledTime}
-              </Text>
-              <Text fontSize={14} fontWeight="600" color={colors.onPrimary} opacity={0.85} paddingBottom={9}>
-                {dayWord(bucket, nextDose.scheduledAt)}
-              </Text>
-            </XStack>
-          )}
-        </LinearGradient>
-      );
-    }
+          </>
+        ) : isScheduled ? (
+          <XStack alignItems="flex-end" gap={space.sm} marginTop={space.md}>
+            <Text fontSize={40} fontWeight="800" color={colors.onPrimary}>
+              {nextDose.scheduledTime}
+            </Text>
+            <Text fontSize={14} fontWeight="600" color={colors.onPrimary} opacity={0.85} paddingBottom={9}>
+              {dayWord(bucket, nextDose.scheduledAt)}
+            </Text>
+          </XStack>
+        ) : null}
+      </LinearGradient>
+    );
+  }
 
+  function renderNoDoseCard() {
     return (
       <YStack
         marginHorizontal={space.lg}
@@ -346,7 +341,14 @@ export default function DashboardScreen({ navigate }: { navigate: Navigate }) {
           </Pressable>
         </XStack>
 
-        {renderHero()}
+        {isOffline ? (
+          renderOfflineCard()
+        ) : (
+          <>
+            {isUrgent && renderLateCard()}
+            {nextDose && nextMed ? renderNextCard() : !isUrgent && renderNoDoseCard()}
+          </>
+        )}
 
         <YStack
           marginHorizontal={space.lg}
