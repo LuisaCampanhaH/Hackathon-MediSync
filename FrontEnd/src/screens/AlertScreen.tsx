@@ -1,20 +1,15 @@
 import { useState } from 'react';
 import { Linking, Pressable } from 'react-native';
-import { YStack, XStack, Text } from 'tamagui';
+import { YStack, Text } from 'tamagui';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 
 import { useAppTheme } from '../theme/ThemeContext';
 import { radii, space } from '../theme/tokens';
 import { getMedication, usePatientData } from '../data/store';
 import { notifyError } from '../platformAlert';
+import { formatLate, minutesLate } from '../utils/time';
 import type { Navigate } from '../../App';
-
-function minutesLate(scheduledTime: string) {
-  const [h, m] = scheduledTime.split(':').map(Number);
-  const scheduled = new Date();
-  scheduled.setHours(h, m, 0, 0);
-  return Math.max(1, Math.round((Date.now() - scheduled.getTime()) / 60000));
-}
 
 export default function AlertScreen({ navigate, doseId }: { navigate: Navigate; doseId?: string }) {
   const { colors } = useAppTheme();
@@ -107,10 +102,10 @@ export default function AlertScreen({ navigate, doseId }: { navigate: Navigate; 
               <Text fontWeight="800">
                 {med.name} {med.dosage}
               </Text>{' '}
-              está atrasado há {minutesLate(dose.scheduledTime)} minutos.
+              está atrasado {formatLate(minutesLate(dose.scheduledTime))}.
             </Text>
             <Text fontSize={14} color={colors.alertBody} opacity={0.8} textAlign="center">
-              {patient.name} · caixinha no quarto
+              {patient.name} · programado para {dose.scheduledTime} · caixinha do quarto
             </Text>
           </>
         ) : (
@@ -124,45 +119,62 @@ export default function AlertScreen({ navigate, doseId }: { navigate: Navigate; 
         {patient.phone && (
           <Pressable
             onPress={() => Linking.openURL(`tel:${patient.phone}`)}
-            style={{ width: '100%', maxWidth: 320 }}
+            style={{
+              width: '100%',
+              maxWidth: 320,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.2,
+              shadowRadius: 18,
+              elevation: 6,
+            }}
           >
-            <XStack
-              alignItems="center"
-              justifyContent="center"
-              gap={space.sm}
-              minHeight={60}
-              borderRadius={18}
-              backgroundColor={colors.alertPrimaryBg}
-              shadowColor="#000"
-              shadowOffset={{ width: 0, height: 8 }}
-              shadowOpacity={0.2}
-              shadowRadius={18}
-              elevation={6}
+            <LinearGradient
+              colors={colors.gradAlert}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: space.sm,
+                minHeight: 60,
+                borderRadius: 18,
+              }}
             >
               <Feather name="phone-call" size={20} color={colors.onWarn} />
               <Text color={colors.onWarn} fontSize={17.5} fontWeight="700">
                 Ligar para o Paciente
               </Text>
-            </XStack>
+            </LinearGradient>
           </Pressable>
         )}
 
-        <Pressable onPress={handleManualConfirm} disabled={confirming} style={{ width: '100%', maxWidth: 320 }}>
-          <XStack
-            alignItems="center"
-            justifyContent="center"
-            gap={space.sm}
-            minHeight={60}
-            borderRadius={18}
-            borderWidth={2}
-            borderColor={colors.alertSecondaryBorder}
-            opacity={confirming ? 0.6 : 1}
+        <Pressable
+          onPress={handleManualConfirm}
+          disabled={confirming}
+          style={{ width: '100%', maxWidth: 320, opacity: confirming ? 0.6 : 1 }}
+        >
+          <LinearGradient
+            colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.15)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: space.sm,
+              minHeight: 60,
+              borderRadius: 18,
+              borderWidth: 2,
+              borderColor: colors.alertSecondaryBorder,
+            }}
           >
             <Feather name="check" size={18} color={colors.alertSecondaryFg} />
             <Text color={colors.alertSecondaryFg} fontSize={16} fontWeight="700">
               {confirming ? 'Confirmando...' : 'Marcar como tomado atrasado'}
             </Text>
-          </XStack>
+          </LinearGradient>
         </Pressable>
       </YStack>
     </YStack>
